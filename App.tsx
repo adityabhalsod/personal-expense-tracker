@@ -6,6 +6,7 @@ import { StatusBar, View, ActivityIndicator, StyleSheet, Text } from 'react-nati
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/theme';
+import { LanguageProvider, useLanguage } from './src/i18n';
 import AppNavigator from './src/navigation';
 import { useAppStore } from './src/store';
 import { processRecurringExpenses } from './src/services/recurringExpenses';
@@ -15,11 +16,12 @@ import PinLockScreen from './src/components/PinLockScreen';
 // Loading screen displayed while the app initializes data from SQLite
 const LoadingScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   return (
     <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
       <ActivityIndicator size="large" color={theme.colors.primary} />
       <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-        Loading your data...
+        {t.common.loading}
       </Text>
     </View>
   );
@@ -80,7 +82,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AppContent />
+          <LanguageProvider>
+            <AppContent />
+          </LanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -8,16 +8,17 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import EmptyState from '../components/common/EmptyState';
 import { formatCurrency, getCurrencySymbol } from '../utils/helpers';
-import { MONTH_NAMES } from '../constants';
 import { Budget } from '../types';
 
 const BudgetSetupScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { budgets, categories, settings, loadBudgets, addBudget, updateBudget, deleteBudget, expenses } = useAppStore();
 
   const [showModal, setShowModal] = useState(false); // Budget edit modal visibility
@@ -65,19 +66,19 @@ const BudgetSetupScreen = () => {
   // Save new or updated budget
   const handleSave = async () => {
     if (!selectedCategory) {
-      Alert.alert('Error', 'Please select a category.');
+      Alert.alert(t.common.error, t.budget.selectCategory);
       return;
     }
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Error', 'Please enter a valid budget amount.');
+      Alert.alert(t.common.error, t.budget.validAmount);
       return;
     }
 
     // Prevent duplicate budgets for same category in a month
     const existing = budgets.find(b => b.categoryId === selectedCategory && b.id !== editingBudget?.id);
     if (existing) {
-      Alert.alert('Error', 'A budget already exists for this category. Please edit the existing one.');
+      Alert.alert(t.common.error, t.budget.duplicateBudget);
       return;
     }
 
@@ -93,10 +94,10 @@ const BudgetSetupScreen = () => {
 
   // Confirm and delete a budget
   const handleDelete = (budget: Budget) => {
-    Alert.alert('Delete Budget', 'Are you sure you want to remove this budget?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t.budget.deleteTitle, t.budget.deleteMsg, [
+      { text: t.common.cancel, style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive',
+        text: t.common.delete, style: 'destructive',
         onPress: async () => {
           await deleteBudget(budget.id);
           await loadBudgets(currentMonth, currentYear);
@@ -138,21 +139,21 @@ const BudgetSetupScreen = () => {
         <Card>
           <View style={styles.overviewHeader}>
             <Text style={[styles.overviewMonth, { color: theme.colors.textSecondary }]}>
-              {MONTH_NAMES[currentMonth - 1]} {currentYear}
+              {t.months[currentMonth - 1]} {currentYear}
             </Text>
-            <Text style={[styles.overviewTitle, { color: theme.colors.text }]}>Monthly Budget</Text>
+            <Text style={[styles.overviewTitle, { color: theme.colors.text }]}>{t.budget.monthlyBudget}</Text>
           </View>
 
           {/* Total spent vs total budget */}
           <View style={styles.overviewRow}>
             <View>
-              <Text style={[styles.overviewLabel, { color: theme.colors.textSecondary }]}>Spent</Text>
+              <Text style={[styles.overviewLabel, { color: theme.colors.textSecondary }]}>{t.budget.spent}</Text>
               <Text style={[styles.overviewAmount, { color: getProgressColor(overallProgress) }]}>
                 {formatCurrency(totalSpent, settings.defaultCurrency)}
               </Text>
             </View>
             <View style={styles.overviewRight}>
-              <Text style={[styles.overviewLabel, { color: theme.colors.textSecondary }]}>Budget</Text>
+              <Text style={[styles.overviewLabel, { color: theme.colors.textSecondary }]}>{t.budget.budget}</Text>
               <Text style={[styles.overviewAmount, { color: theme.colors.text }]}>
                 {formatCurrency(totalBudget, settings.defaultCurrency)}
               </Text>
@@ -172,14 +173,14 @@ const BudgetSetupScreen = () => {
             />
           </View>
           <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
-            {Math.round(overallProgress * 100)}% used
+            {Math.round(overallProgress * 100)}% {t.budget.used}
           </Text>
         </Card>
 
         {/* Budget list section header */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            Category Budgets ({budgets.length})
+            {t.budget.categoryBudgets} ({budgets.length})
           </Text>
         </View>
 
@@ -187,9 +188,9 @@ const BudgetSetupScreen = () => {
         {budgets.length === 0 ? (
           <EmptyState
             icon="wallet-outline"
-            title="No Budgets Set"
-            subtitle="Create budgets to track your spending by category"
-            actionLabel="Add Budget"
+            title={t.budget.noBudgets}
+            subtitle={t.budget.noBudgetsHint}
+            actionLabel={t.budget.addBudget}
             onAction={handleAddBudget}
           />
         ) : (
@@ -235,7 +236,7 @@ const BudgetSetupScreen = () => {
                     {formatCurrency(spent, settings.defaultCurrency)} / {formatCurrency(budget.amount, settings.defaultCurrency)}
                   </Text>
                   <Text style={[styles.budgetRemaining, { color: remaining >= 0 ? theme.colors.success : theme.colors.error }]}>
-                    {remaining >= 0 ? `${formatCurrency(remaining, settings.defaultCurrency)} left` : `${formatCurrency(Math.abs(remaining), settings.defaultCurrency)} over`}
+                    {remaining >= 0 ? `${formatCurrency(remaining, settings.defaultCurrency)} ${t.budget.left}` : `${formatCurrency(Math.abs(remaining), settings.defaultCurrency)} ${t.budget.over}`}
                   </Text>
                 </View>
               </Card>
@@ -259,11 +260,11 @@ const BudgetSetupScreen = () => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-              {editingBudget ? 'Edit Budget' : 'New Budget'}
+              {editingBudget ? t.budget.editBudget : t.budget.newBudget}
             </Text>
 
             {/* Category selection grid */}
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>Category</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>{t.budget.category}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
               {categories
                 .map(cat => (
@@ -292,7 +293,7 @@ const BudgetSetupScreen = () => {
 
             {/* Budget amount input */}
             <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 16 }]}>
-              Monthly Budget Amount
+              {t.budget.monthlyBudgetAmount}
             </Text>
             <View style={[styles.amountInput, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}>
               <Text style={[styles.currencySymbol, { color: theme.colors.textSecondary }]}>{currency}</Text>
@@ -308,9 +309,9 @@ const BudgetSetupScreen = () => {
 
             {/* Save and cancel actions */}
             <View style={styles.modalActions}>
-              <Button title="Save" onPress={handleSave} size="large" style={{ flex: 1 }} />
+              <Button title={t.common.save} onPress={handleSave} size="large" style={{ flex: 1 }} />
               <Button
-                title="Cancel"
+                title={t.common.cancel}
                 onPress={() => setShowModal(false)}
                 variant="outline"
                 size="large"

@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -13,6 +14,7 @@ import { formatCurrency, formatDate, getPaymentMethodLabel } from '../utils/help
 
 const ExpenseDetailScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { expenseId } = route.params; // ID of the expense to display
@@ -25,7 +27,7 @@ const ExpenseDetailScreen = () => {
   if (!expense) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: theme.colors.textSecondary }}>Expense not found</Text>
+        <Text style={{ color: theme.colors.textSecondary }}>{t.expenseDetail.notFound}</Text>
       </View>
     );
   }
@@ -36,12 +38,12 @@ const ExpenseDetailScreen = () => {
   // Confirm and execute expense deletion
   const handleDelete = () => {
     Alert.alert(
-      'Delete Expense',
-      'Are you sure you want to delete this expense? The amount will be restored to your wallet balance.',
+      t.expenseDetail.deleteTitle,
+      t.expenseDetail.deleteMsg,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Delete',
+          text: t.common.delete,
           style: 'destructive',
           onPress: async () => {
             await deleteExpense(expense.id); // Delete from database and restore wallet
@@ -77,22 +79,22 @@ const ExpenseDetailScreen = () => {
         {/* Payment method detail row */}
         <DetailRow
           icon="credit-card"
-          label="Payment Method"
+          label={t.expenseDetail.paymentMethod}
           value={getPaymentMethodLabel(expense.paymentMethod)}
           theme={theme}
         />
         {/* Currency detail row */}
-        <DetailRow icon="currency-usd" label="Currency" value={expense.currency} theme={theme} />
+        <DetailRow icon="currency-usd" label={t.expenseDetail.currency} value={expense.currency} theme={theme} />
         {/* Notes detail row (if present) */}
         {expense.notes ? (
-          <DetailRow icon="note-text" label="Notes" value={expense.notes} theme={theme} />
+          <DetailRow icon="note-text" label={t.expenseDetail.notes} value={expense.notes} theme={theme} />
         ) : null}
         {/* Tags detail row (if any tags exist) */}
         {expense.tags.length > 0 && (
           <View style={styles.detailRow}>
             <MaterialCommunityIcons name="tag-multiple" size={20} color={theme.colors.primary} />
             <View style={styles.detailInfo}>
-              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Tags</Text>
+              <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>{t.expenseDetail.tags}</Text>
               <View style={styles.tagsRow}>
                 {expense.tags.map((tag, index) => (
                   <View key={index} style={[styles.tagChip, { backgroundColor: theme.colors.chipBackground }]}>
@@ -107,7 +109,7 @@ const ExpenseDetailScreen = () => {
         {expense.isRecurring && (
           <DetailRow
             icon="repeat"
-            label="Recurring"
+            label={t.expenseDetail.recurring}
             value={expense.recurringFrequency || 'Enabled'}
             theme={theme}
           />
@@ -115,7 +117,7 @@ const ExpenseDetailScreen = () => {
         {/* Creation timestamp */}
         <DetailRow
           icon="clock-outline"
-          label="Created"
+          label={t.expenseDetail.created}
           value={formatDate(expense.createdAt, 'MMM dd, yyyy HH:mm')}
           theme={theme}
         />
@@ -124,7 +126,7 @@ const ExpenseDetailScreen = () => {
       {/* Action buttons: Edit and Delete */}
       <View style={styles.actions}>
         <Button
-          title="Edit Expense"
+          title={t.expenseDetail.editExpense}
           onPress={() => navigation.navigate('AddExpense', { expenseId: expense.id })}
           variant="primary"
           fullWidth
@@ -132,7 +134,7 @@ const ExpenseDetailScreen = () => {
         />
         <View style={{ height: 12 }} />
         <Button
-          title="Delete Expense"
+          title={t.expenseDetail.deleteExpense}
           onPress={handleDelete}
           variant="danger"
           fullWidth

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, TextInput, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -12,6 +13,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 
 const SecurityScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { settings, updateSettings } = useAppStore();
 
   const [showPinSetup, setShowPinSetup] = useState(false); // Whether PIN setup form is visible
@@ -26,17 +28,17 @@ const SecurityScreen = () => {
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
       if (!hasHardware) {
-        Alert.alert('Not Available', 'This device does not support biometric authentication.');
+        Alert.alert(t.security.notAvailable, t.security.notAvailableMsg);
         return;
       }
       if (!isEnrolled) {
-        Alert.alert('Not Set Up', 'Please set up biometric authentication in your device settings first.');
+        Alert.alert(t.security.notSetUp, t.security.notSetUpMsg);
         return;
       }
 
       // Verify identity before enabling biometric lock
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Verify your identity to enable biometric lock',
+        promptMessage: t.security.verifyIdentity,
       });
 
       if (result.success) {
@@ -50,11 +52,11 @@ const SecurityScreen = () => {
   // Validate and save the PIN code
   const handleSavePin = async () => {
     if (pin.length < 4) {
-      Alert.alert('Invalid PIN', 'PIN must be at least 4 digits.');
+      Alert.alert(t.security.invalidPin, t.security.invalidPinMsg);
       return;
     }
     if (pin !== confirmPin) {
-      Alert.alert('Mismatch', 'PINs do not match. Please try again.');
+      Alert.alert(t.security.mismatch, t.security.mismatchMsg);
       return;
     }
 
@@ -63,13 +65,13 @@ const SecurityScreen = () => {
     setShowPinSetup(false);
     setPin('');
     setConfirmPin('');
-    Alert.alert('Success', 'PIN lock has been enabled.');
+    Alert.alert(t.common.success, t.security.pinSuccess);
   };
 
   // Disable PIN lock
   const handleDisablePin = async () => {
     await updateSettings({ enablePin: false, pinHash: undefined });
-    Alert.alert('Disabled', 'PIN lock has been removed.');
+    Alert.alert(t.security.disabled, t.security.pinDisabledMsg);
   };
 
   return (
@@ -79,9 +81,9 @@ const SecurityScreen = () => {
         <View style={styles.infoRow}>
           <MaterialCommunityIcons name="shield-lock" size={32} color={theme.colors.primary} />
           <View style={styles.infoText}>
-            <Text style={[styles.infoTitle, { color: theme.colors.text }]}>App Security</Text>
+            <Text style={[styles.infoTitle, { color: theme.colors.text }]}>{t.security.appSecurity}</Text>
             <Text style={[styles.infoSubtitle, { color: theme.colors.textSecondary }]}>
-              Protect your financial data with PIN or biometric authentication.
+              {t.security.securityDesc}
             </Text>
           </View>
         </View>
@@ -93,9 +95,9 @@ const SecurityScreen = () => {
           <View style={styles.settingInfo}>
             <MaterialCommunityIcons name="fingerprint" size={24} color={theme.colors.primary} />
             <View style={styles.settingText}>
-              <Text style={[styles.settingTitle, { color: theme.colors.text }]}>Biometric Lock</Text>
+              <Text style={[styles.settingTitle, { color: theme.colors.text }]}>{t.security.biometricLock}</Text>
               <Text style={[styles.settingSubtitle, { color: theme.colors.textSecondary }]}>
-                Use fingerprint or face recognition
+                {t.security.biometricDesc}
               </Text>
             </View>
           </View>
@@ -114,9 +116,9 @@ const SecurityScreen = () => {
           <View style={styles.settingInfo}>
             <MaterialCommunityIcons name="lock" size={24} color={theme.colors.primary} />
             <View style={styles.settingText}>
-              <Text style={[styles.settingTitle, { color: theme.colors.text }]}>PIN Lock</Text>
+              <Text style={[styles.settingTitle, { color: theme.colors.text }]}>{t.security.pinLock}</Text>
               <Text style={[styles.settingSubtitle, { color: theme.colors.textSecondary }]}>
-                {settings.enablePin ? 'PIN is enabled' : 'Set a PIN to lock the app'}
+                {settings.enablePin ? t.security.pinEnabled : t.security.pinDisabled}
               </Text>
             </View>
           </View>
@@ -141,7 +143,7 @@ const SecurityScreen = () => {
               style={[styles.pinInput, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
               value={pin}
               onChangeText={setPin}
-              placeholder="Enter PIN"
+              placeholder={t.security.enterPin}
               placeholderTextColor={theme.colors.textTertiary}
               keyboardType="number-pad"
               secureTextEntry // Hide PIN digits
@@ -151,16 +153,16 @@ const SecurityScreen = () => {
               style={[styles.pinInput, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
               value={confirmPin}
               onChangeText={setConfirmPin}
-              placeholder="Confirm PIN"
+              placeholder={t.security.confirmPin}
               placeholderTextColor={theme.colors.textTertiary}
               keyboardType="number-pad"
               secureTextEntry
               maxLength={6}
             />
             <View style={styles.pinActions}>
-              <Button title="Set PIN" onPress={handleSavePin} size="medium" />
+              <Button title={t.security.setPin} onPress={handleSavePin} size="medium" />
               <Button
-                title="Cancel"
+                title={t.common.cancel}
                 onPress={() => { setShowPinSetup(false); setPin(''); setConfirmPin(''); }}
                 variant="outline"
                 size="medium"
@@ -175,7 +177,7 @@ const SecurityScreen = () => {
         <View style={styles.tipRow}>
           <MaterialCommunityIcons name="lightbulb-outline" size={20} color={theme.colors.warning} />
           <Text style={[styles.tipText, { color: theme.colors.textSecondary }]}>
-            For maximum security, we recommend enabling biometric authentication. Your data is always stored locally and encrypted on your device.
+            {t.security.securityTip}
           </Text>
         </View>
       </Card>

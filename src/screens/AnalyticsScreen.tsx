@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PieChart, BarChart, LineChart } from 'react-native-chart-kit';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import { formatCurrency, getDateRange, calculatePercentage, formatCompactNumber } from '../utils/helpers';
@@ -18,19 +19,19 @@ import * as db from '../database';
 // Screen dimensions for responsive chart sizing
 const screenWidth = Dimensions.get('window').width;
 
-// Time range options for analytics period selection
-const TIME_RANGES: { value: TimeRange; label: string }[] = [
-  { value: 'daily', label: 'Today' },
-  { value: 'weekly', label: 'Week' },
-  { value: 'monthly', label: 'Month' },
-  { value: 'quarterly', label: 'Quarter' },
-  { value: 'half_yearly', label: '6 Months' },
-  { value: 'yearly', label: 'Year' },
-];
+// Time range values for analytics period selection
+const TIME_RANGE_VALUES: TimeRange[] = ['daily', 'weekly', 'monthly', 'quarterly', 'half_yearly', 'yearly'];
 
 const AnalyticsScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { categories } = useAppStore();
+
+  // Translated time range labels
+  const TIME_RANGES = TIME_RANGE_VALUES.map(value => ({
+    value,
+    label: ({ daily: t.analytics.today, weekly: t.analytics.week, monthly: t.analytics.month, quarterly: t.analytics.quarter, half_yearly: t.analytics.sixMonths, yearly: t.analytics.year } as Record<string, string>)[value] || value,
+  }));
 
   // State for analytics data and UI controls
   const [timeRange, setTimeRange] = useState<TimeRange>('monthly'); // Selected time period
@@ -127,7 +128,7 @@ const AnalyticsScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Screen header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Analytics</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{t.analytics.title}</Text>
         </View>
 
         {/* Time range selector tabs */}
@@ -171,13 +172,13 @@ const AnalyticsScreen = () => {
                 <Text style={[styles.statAmount, { color: theme.colors.text }]}>
                   {formatCompactNumber(totalExpenses)}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Total Spent</Text>
+                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t.analytics.totalSpent}</Text>
               </View>
               {/* Transaction count stat */}
               <View style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <MaterialCommunityIcons name="swap-horizontal" size={24} color={theme.colors.primary} />
                 <Text style={[styles.statAmount, { color: theme.colors.text }]}>{expenseCount}</Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Transactions</Text>
+                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t.analytics.transactions}</Text>
               </View>
               {/* Daily average stat */}
               <View style={[styles.statCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -185,14 +186,14 @@ const AnalyticsScreen = () => {
                 <Text style={[styles.statAmount, { color: theme.colors.text }]}>
                   {formatCompactNumber(dailyData.length > 0 ? totalExpenses / Math.max(dailyData.length, 1) : 0)}
                 </Text>
-                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Daily Avg</Text>
+                <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t.analytics.dailyAvg}</Text>
               </View>
             </View>
 
             {/* Category distribution pie chart */}
             {pieChartData.length > 0 && (
               <Card style={styles.chartCard}>
-                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Spending by Category</Text>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.analytics.spendingByCategory}</Text>
                 <PieChart
                   data={pieChartData}
                   width={screenWidth - 64}
@@ -209,7 +210,7 @@ const AnalyticsScreen = () => {
             {/* Top categories bar chart */}
             {categoryData.length > 0 && barChartData.datasets[0].data.length > 0 && (
               <Card style={styles.chartCard}>
-                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Top Categories</Text>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.analytics.topCategories}</Text>
                 <BarChart
                   data={barChartData}
                   width={screenWidth - 64}
@@ -231,7 +232,7 @@ const AnalyticsScreen = () => {
             {/* Spending trend line chart */}
             {dailyData.length > 1 && lineChartData.datasets[0].data.length > 1 && (
               <Card style={styles.chartCard}>
-                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Spending Trend</Text>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.analytics.spendingTrend}</Text>
                 <LineChart
                   data={lineChartData}
                   width={screenWidth - 64}
@@ -249,7 +250,7 @@ const AnalyticsScreen = () => {
             {/* Category breakdown list with percentages */}
             {categoryData.length > 0 && (
               <Card style={styles.chartCard}>
-                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>Category Details</Text>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.analytics.categoryDetails}</Text>
                 {categoryData.map((cat, index) => (
                   <View key={index} style={styles.catRow}>
                     {/* Category icon */}
@@ -260,7 +261,7 @@ const AnalyticsScreen = () => {
                     <View style={styles.catInfo}>
                       <Text style={[styles.catName, { color: theme.colors.text }]}>{cat.name}</Text>
                       <Text style={[styles.catCount, { color: theme.colors.textSecondary }]}>
-                        {cat.count} transaction{cat.count !== 1 ? 's' : ''}
+                        {cat.count} {cat.count !== 1 ? t.common.transactions : t.common.transaction}
                       </Text>
                     </View>
                     {/* Amount and percentage display */}
@@ -281,10 +282,10 @@ const AnalyticsScreen = () => {
                 <View style={styles.emptyState}>
                   <MaterialCommunityIcons name="chart-arc" size={64} color={theme.colors.textTertiary} />
                   <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                    No spending data for this period
+                    {t.analytics.noData}
                   </Text>
                   <Text style={[styles.emptySubtext, { color: theme.colors.textTertiary }]}>
-                    Add some expenses to see your analytics
+                    {t.analytics.addExpensesHint}
                   </Text>
                 </View>
               </Card>

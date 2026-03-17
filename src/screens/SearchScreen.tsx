@@ -8,12 +8,14 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import { Expense } from '../types';
 import { formatCurrency, formatRelativeDate } from '../utils/helpers';
 
 const SearchScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const { searchExpenses, categories } = useAppStore();
 
@@ -67,7 +69,7 @@ const SearchScreen = () => {
           style={[styles.searchInput, { color: theme.colors.text }]}
           value={query}
           onChangeText={handleSearch}
-          placeholder="Search expenses, notes, tags..."
+          placeholder={t.search.placeholder}
           placeholderTextColor={theme.colors.textTertiary}
           autoFocus // Focus immediately when screen opens
           returnKeyType="search"
@@ -155,9 +157,9 @@ const SearchScreen = () => {
             // No results found message
             <View style={styles.emptyState}>
               <MaterialCommunityIcons name="magnify" size={48} color={theme.colors.textTertiary} />
-              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>No results found</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>{t.search.noResults}</Text>
               <Text style={[styles.emptySubtext, { color: theme.colors.textTertiary }]}>
-                Try different keywords or adjust filters
+                {t.search.noResultsHint}
               </Text>
             </View>
           ) : (
@@ -165,10 +167,10 @@ const SearchScreen = () => {
             <View style={styles.emptyState}>
               <MaterialCommunityIcons name="magnify" size={48} color={theme.colors.textTertiary} />
               <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                Search your expenses
+                {t.search.searchExpenses}
               </Text>
               <Text style={[styles.emptySubtext, { color: theme.colors.textTertiary }]}>
-                Search by notes, category name, or tags
+                {t.search.searchHint}
               </Text>
             </View>
           )

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { TimeRange, ExportFormat } from '../types';
@@ -13,26 +14,40 @@ import { exportAsJSON, exportAsCSV, exportAsExcel, exportAsPDF } from '../utils/
 import * as db from '../database';
 import { format } from 'date-fns';
 
-// Time period options for export range selection
-const TIME_RANGES: { value: TimeRange; label: string; icon: string }[] = [
-  { value: 'daily', label: 'Today', icon: 'calendar-today' },
-  { value: 'weekly', label: 'This Week', icon: 'calendar-week' },
-  { value: 'monthly', label: 'This Month', icon: 'calendar-month' },
-  { value: 'quarterly', label: 'Quarter', icon: 'calendar-range' },
-  { value: 'half_yearly', label: '6 Months', icon: 'calendar-clock' },
-  { value: 'yearly', label: 'This Year', icon: 'calendar' },
+// Time period values for export range selection
+const TIME_RANGE_VALUES: { value: TimeRange; icon: string }[] = [
+  { value: 'daily', icon: 'calendar-today' },
+  { value: 'weekly', icon: 'calendar-week' },
+  { value: 'monthly', icon: 'calendar-month' },
+  { value: 'quarterly', icon: 'calendar-range' },
+  { value: 'half_yearly', icon: 'calendar-clock' },
+  { value: 'yearly', icon: 'calendar' },
 ];
 
-// Export format options with descriptions
-const FORMATS: { value: ExportFormat; label: string; icon: string; description: string }[] = [
-  { value: 'json', label: 'JSON', icon: 'code-json', description: 'Structured data format' },
-  { value: 'csv', label: 'CSV', icon: 'file-delimited', description: 'Spreadsheet compatible' },
-  { value: 'xlsx', label: 'Excel', icon: 'file-excel', description: 'Microsoft Excel format' },
-  { value: 'pdf', label: 'PDF', icon: 'file-pdf-box', description: 'Printable report' },
+// Export format values
+const FORMAT_VALUES: { value: ExportFormat; icon: string }[] = [
+  { value: 'json', icon: 'code-json' },
+  { value: 'csv', icon: 'file-delimited' },
+  { value: 'xlsx', icon: 'file-excel' },
+  { value: 'pdf', icon: 'file-pdf-box' },
 ];
 
 const ExportReportScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
+
+  // Translated time range labels
+  const TIME_RANGES = TIME_RANGE_VALUES.map(r => ({
+    ...r,
+    label: ({ daily: t.exportReport.today, weekly: t.exportReport.thisWeek, monthly: t.exportReport.thisMonth, quarterly: t.exportReport.quarter, half_yearly: t.exportReport.sixMonths, yearly: t.exportReport.thisYear } as Record<string, string>)[r.value] || r.value,
+  }));
+
+  // Translated format labels and descriptions
+  const FORMATS = FORMAT_VALUES.map(f => ({
+    ...f,
+    label: { json: t.exportReport.json, csv: t.exportReport.csv, xlsx: t.exportReport.excel, pdf: t.exportReport.pdf }[f.value],
+    description: { json: t.exportReport.jsonDesc, csv: t.exportReport.csvDesc, xlsx: t.exportReport.excelDesc, pdf: t.exportReport.pdfDesc }[f.value],
+  }));
 
   // Export configuration state
   const [selectedRange, setSelectedRange] = useState<TimeRange>('monthly'); // Selected time range
@@ -47,7 +62,7 @@ const ExportReportScreen = () => {
       const expenses = await db.getExpensesByDateRange(start, end); // Fetch expenses in range
 
       if (expenses.length === 0) {
-        Alert.alert('No Data', 'No expenses found for the selected period.');
+        Alert.alert(t.exportReport.noData, t.exportReport.noDataMsg);
         setExporting(false);
         return;
       }
@@ -76,7 +91,7 @@ const ExportReportScreen = () => {
           break;
       }
     } catch (error) {
-      Alert.alert('Export Failed', 'Unable to export the report. Please try again.');
+      Alert.alert(t.exportReport.exportFailed, t.exportReport.exportFailedMsg);
       console.error('Export error:', error);
     } finally {
       setExporting(false);
@@ -86,7 +101,7 @@ const ExportReportScreen = () => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Time period selection section */}
-      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Select Time Period</Text>
+      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t.exportReport.selectTimePeriod}</Text>
       <View style={styles.optionsGrid}>
         {TIME_RANGES.map((range) => (
           <TouchableOpacity
@@ -119,7 +134,7 @@ const ExportReportScreen = () => {
       </View>
 
       {/* Export format selection section */}
-      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Export Format</Text>
+      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t.exportReport.exportFormat}</Text>
       {FORMATS.map((fmt) => (
         <TouchableOpacity
           key={fmt.value}
@@ -159,7 +174,7 @@ const ExportReportScreen = () => {
       {/* Export button */}
       <View style={styles.exportContainer}>
         <Button
-          title={exporting ? 'Exporting...' : 'Export Report'}
+          title={exporting ? t.exportReport.exporting : t.exportReport.exportBtn}
           onPress={handleExport}
           loading={exporting}
           fullWidth

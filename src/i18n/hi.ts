@@ -1,0 +1,347 @@
+// Hindi (हिंदी) translation strings for the Expense Tracker app
+
+import { TranslationKeys } from './en';
+
+const hi: TranslationKeys = {
+  // सामान्य शेयर्ड स्ट्रिंग्स
+  common: {
+    save: 'सहेजें',
+    cancel: 'रद्द करें',
+    delete: 'हटाएं',
+    edit: 'संपादन',
+    add: 'जोड़ें',
+    error: 'त्रुटि',
+    success: 'सफल',
+    ok: 'ठीक',
+    loading: 'आपका डेटा लोड हो रहा है...',
+    transactions: 'लेनदेन',
+    transaction: 'लेनदेन',
+    total: 'कुल',
+  },
+
+  // अभिवादन संदेश
+  greetings: {
+    morning: 'सुप्रभात',
+    afternoon: 'शुभ दोपहर',
+    evening: 'शुभ संध्या',
+  },
+
+  // तारीख लेबल
+  dates: {
+    today: 'आज',
+    yesterday: 'कल',
+  },
+
+  // महीने के नाम
+  months: [
+    'जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
+    'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर',
+  ],
+
+  // टैब नेविगेशन
+  tabs: {
+    home: 'होम',
+    expenses: 'खर्चे',
+    analytics: 'विश्लेषण',
+    wallet: 'वॉलेट',
+    settings: 'सेटिंग्स',
+  },
+
+  // होम स्क्रीन
+  home: {
+    dashboard: 'डैशबोर्ड',
+    startingBalance: 'शुरुआती शेष',
+    remainingBalance: 'शेष राशि',
+    totalSpent: 'कुल खर्च',
+    setupWallet: 'अपना वॉलेट सेट करें',
+    addSalaryHint: 'शुरू करने के लिए अपना मासिक वेतन जोड़ें',
+    addExpense: 'खर्च जोड़ें',
+    analytics: 'विश्लेषण',
+    export: 'निर्यात',
+    budgets: 'बजट',
+    todaysSpending: 'आज का खर्च',
+    recentExpenses: 'हाल के खर्चे',
+    viewAll: 'सभी देखें',
+    noExpenses: 'अभी कोई खर्च नहीं',
+    tapToAdd: 'अपना पहला खर्च जोड़ने के लिए + दबाएं',
+  },
+
+  // खर्चे स्क्रीन
+  expenses: {
+    title: 'खर्चे',
+    all: 'सभी',
+    today: 'आज',
+    thisWeek: 'इस सप्ताह',
+    thisMonth: 'इस महीने',
+    noExpenses: 'कोई खर्च नहीं मिला',
+    addFirstExpense: 'शुरू करने के लिए अपना पहला खर्च जोड़ें',
+    addExpense: 'खर्च जोड़ें',
+  },
+
+  // विश्लेषण स्क्रीन
+  analytics: {
+    title: 'विश्लेषण',
+    today: 'आज',
+    week: 'सप्ताह',
+    month: 'महीना',
+    quarter: 'तिमाही',
+    sixMonths: '६ महीने',
+    year: 'वर्ष',
+    totalSpent: 'कुल खर्च',
+    transactions: 'लेनदेन',
+    dailyAvg: 'दैनिक औसत',
+    spendingByCategory: 'श्रेणी के अनुसार खर्च',
+    topCategories: 'शीर्ष श्रेणियां',
+    spendingTrend: 'खर्च प्रवृत्ति',
+    categoryDetails: 'श्रेणी विवरण',
+    noData: 'इस अवधि के लिए कोई खर्च डेटा नहीं',
+    addExpensesHint: 'अपना विश्लेषण देखने के लिए कुछ खर्चे जोड़ें',
+  },
+
+  // वॉलेट स्क्रीन
+  wallet: {
+    title: 'वॉलेट',
+    remainingBalance: 'शेष राशि',
+    startingBalance: 'शुरुआती शेष',
+    totalSpent: 'कुल खर्च',
+    spent: 'खर्च',
+    addExpense: 'खर्च जोड़ें',
+    editWallet: 'वॉलेट संपादन',
+    budgets: 'बजट',
+    setupTitle: 'अपना वॉलेट सेट करें',
+    setupSubtitle: 'अपने वित्त को ट्रैक करने के लिए अपना मासिक वेतन या शुरुआती शेष जोड़ें',
+    createWallet: 'वॉलेट बनाएं',
+    walletHistory: 'वॉलेट इतिहास',
+    noHistory: 'अभी कोई वॉलेट इतिहास नहीं',
+  },
+
+  // सेटिंग्स स्क्रीन
+  settings: {
+    title: 'सेटिंग्स',
+    appearance: 'दिखावट',
+    theme: 'थीम',
+    light: 'लाइट',
+    dark: 'डार्क',
+    system: 'सिस्टम',
+    darkMode: 'डार्क मोड',
+    general: 'सामान्य',
+    language: 'भाषा',
+    selectLanguage: 'भाषा चुनें',
+    defaultCurrency: 'डिफ़ॉल्ट मुद्रा',
+    selectCurrency: 'मुद्रा चुनें',
+    categories: 'श्रेणियां',
+    budgets: 'बजट',
+    data: 'डेटा',
+    exportReports: 'रिपोर्ट निर्यात',
+    security: 'सुरक्षा',
+    appLock: 'ऐप लॉक',
+    notifications: 'सूचनाएं',
+    about: 'के बारे में',
+    version: 'संस्करण',
+  },
+
+  // खर्च जोड़ें/संपादन स्क्रीन
+  addExpense: {
+    title: 'खर्च जोड़ें',
+    editTitle: 'खर्च संपादन',
+    amount: 'राशि',
+    date: 'तारीख',
+    category: 'श्रेणी',
+    paymentMethod: 'भुगतान विधि',
+    notes: 'नोट्स',
+    notesPlaceholder: 'नोट जोड़ें...',
+    tags: 'टैग्स',
+    tagsPlaceholder: 'जैसे, लंच, ऑफिस, टीम',
+    tagsHint: 'टैग्स को अल्पविराम से अलग करें',
+    recurringExpense: 'आवर्ती खर्च',
+    saveExpense: 'खर्च सहेजें',
+    updateExpense: 'खर्च अपडेट करें',
+    invalidAmount: 'अमान्य राशि',
+    invalidAmountMsg: 'कृपया 0 से अधिक मान्य राशि दर्ज करें।',
+    noCategory: 'कोई श्रेणी नहीं',
+    noCategoryMsg: 'कृपया इस खर्च के लिए एक श्रेणी चुनें।',
+    saveFailed: 'खर्च सहेजने में विफल। कृपया पुनः प्रयास करें।',
+  },
+
+  // खर्च विवरण स्क्रीन
+  expenseDetail: {
+    title: 'खर्च विवरण',
+    paymentMethod: 'भुगतान विधि',
+    currency: 'मुद्रा',
+    notes: 'नोट्स',
+    tags: 'टैग्स',
+    recurring: 'आवर्ती',
+    created: 'बनाया गया',
+    deleteTitle: 'खर्च हटाएं',
+    deleteMsg: 'क्या आप वाकई इस खर्च को हटाना चाहते हैं? राशि आपके वॉलेट शेष में वापस आ जाएगी।',
+    editExpense: 'खर्च संपादन',
+    deleteExpense: 'खर्च हटाएं',
+    notFound: 'खर्च नहीं मिला',
+  },
+
+  // श्रेणी प्रबंधन स्क्रीन
+  categoryManagement: {
+    title: 'श्रेणियां',
+    addCategory: 'श्रेणी जोड़ें',
+    defaultLabel: 'डिफ़ॉल्ट',
+    newCategory: 'नई श्रेणी',
+    editCategory: 'श्रेणी संपादन',
+    name: 'नाम',
+    namePlaceholder: 'श्रेणी का नाम',
+    icon: 'आइकन',
+    color: 'रंग',
+    monthlyBudget: 'मासिक बजट (वैकल्पिक)',
+    saveCategory: 'श्रेणी सहेजें',
+    deleteTitle: 'श्रेणी हटाएं',
+    deleteMsg: 'क्या आप वाकई इस श्रेणी को हटाना चाहते हैं? इस श्रेणी के खर्चे प्रभावित नहीं होंगे।',
+  },
+
+  // वॉलेट सेटअप स्क्रीन
+  walletSetup: {
+    title: 'वॉलेट सेटअप',
+    settingUpFor: 'वॉलेट सेट हो रहा है',
+    walletName: 'वॉलेट का नाम',
+    walletNamePlaceholder: 'जैसे, मासिक वेतन',
+    startingBalance: 'शुरुआती शेष / वेतन',
+    balanceHint: 'यह महीने के लिए आपका शुरुआती शेष होगा। खर्चे इस राशि से काटे जाएंगे।',
+    createWallet: 'वॉलेट बनाएं',
+    updateWallet: 'वॉलेट अपडेट करें',
+  },
+
+  // रिपोर्ट निर्यात स्क्रीन
+  exportReport: {
+    title: 'रिपोर्ट निर्यात',
+    selectTimePeriod: 'समय अवधि चुनें',
+    today: 'आज',
+    thisWeek: 'इस सप्ताह',
+    thisMonth: 'इस महीने',
+    quarter: 'तिमाही',
+    sixMonths: '६ महीने',
+    thisYear: 'इस वर्ष',
+    exportFormat: 'निर्यात प्रारूप',
+    json: 'JSON',
+    jsonDesc: 'संरचित डेटा प्रारूप',
+    csv: 'CSV',
+    csvDesc: 'स्प्रेडशीट संगत',
+    excel: 'Excel',
+    excelDesc: 'माइक्रोसॉफ्ट एक्सेल प्रारूप',
+    pdf: 'PDF',
+    pdfDesc: 'प्रिंट करने योग्य रिपोर्ट',
+    exportBtn: 'रिपोर्ट निर्यात',
+    exporting: 'निर्यात हो रहा है...',
+    noData: 'कोई डेटा नहीं',
+    noDataMsg: 'चयनित अवधि के लिए कोई खर्च नहीं मिला।',
+    exportFailed: 'निर्यात विफल',
+    exportFailedMsg: 'रिपोर्ट निर्यात करने में असमर्थ। कृपया पुनः प्रयास करें।',
+  },
+
+  // खोज स्क्रीन
+  search: {
+    title: 'खोज',
+    placeholder: 'खर्चे, नोट्स, टैग्स खोजें...',
+    noResults: 'कोई परिणाम नहीं मिला',
+    noResultsHint: 'अलग कीवर्ड आज़माएं या फ़िल्टर बदलें',
+    searchExpenses: 'अपने खर्चे खोजें',
+    searchHint: 'नोट्स, श्रेणी नाम, या टैग्स से खोजें',
+  },
+
+  // सुरक्षा स्क्रीन
+  security: {
+    title: 'सुरक्षा',
+    appSecurity: 'ऐप सुरक्षा',
+    securityDesc: 'PIN या बायोमेट्रिक प्रमाणीकरण से अपने वित्तीय डेटा को सुरक्षित करें।',
+    biometricLock: 'बायोमेट्रिक लॉक',
+    biometricDesc: 'फिंगरप्रिंट या फेस पहचान उपयोग करें',
+    pinLock: 'PIN लॉक',
+    pinEnabled: 'PIN सक्षम है',
+    pinDisabled: 'ऐप लॉक करने के लिए PIN सेट करें',
+    notAvailable: 'उपलब्ध नहीं',
+    notAvailableMsg: 'यह उपकरण बायोमेट्रिक प्रमाणीकरण का समर्थन नहीं करता।',
+    notSetUp: 'सेट नहीं है',
+    notSetUpMsg: 'कृपया पहले अपनी उपकरण सेटिंग्स में बायोमेट्रिक प्रमाणीकरण सेट करें।',
+    verifyIdentity: 'बायोमेट्रिक लॉक सक्षम करने के लिए अपनी पहचान सत्यापित करें',
+    invalidPin: 'अमान्य PIN',
+    invalidPinMsg: 'PIN कम से कम ४ अंकों का होना चाहिए।',
+    mismatch: 'मेल नहीं खाता',
+    mismatchMsg: 'PIN मेल नहीं खाते। कृपया पुनः प्रयास करें।',
+    pinSuccess: 'PIN लॉक सक्षम किया गया।',
+    pinDisabledMsg: 'PIN लॉक हटा दिया गया।',
+    disabled: 'अक्षम',
+    securityTip: 'अधिकतम सुरक्षा के लिए, हम बायोमेट्रिक प्रमाणीकरण सक्षम करने की सलाह देते हैं। आपका डेटा हमेशा आपके उपकरण पर स्थानीय और एन्क्रिप्टेड रहता है।',
+    enterPin: 'PIN दर्ज करें',
+    confirmPin: 'PIN की पुष्टि करें',
+    setPin: 'PIN सेट करें',
+  },
+
+  // PIN लॉक स्क्रीन
+  pinLock: {
+    enterPin: 'PIN दर्ज करें',
+    subtitle: 'अनलॉक करने के लिए अपना PIN दर्ज करें',
+    incorrectPin: 'गलत PIN',
+    tooManyAttempts: 'बहुत अधिक प्रयास',
+    tooManyAttemptsMsg: 'कृपया बाद में पुनः प्रयास करें।',
+    unlockPrompt: 'खर्च ट्रैकर अनलॉक करें',
+    usePin: 'PIN उपयोग करें',
+  },
+
+  // बजट सेटअप स्क्रीन
+  budget: {
+    title: 'बजट सेटअप',
+    monthlyBudget: 'मासिक बजट',
+    spent: 'खर्च',
+    budget: 'बजट',
+    used: 'उपयोग',
+    categoryBudgets: 'श्रेणी बजट',
+    noBudgets: 'कोई बजट सेट नहीं',
+    noBudgetsHint: 'श्रेणी के अनुसार खर्च ट्रैक करने के लिए बजट बनाएं',
+    addBudget: 'बजट जोड़ें',
+    newBudget: 'नया बजट',
+    editBudget: 'बजट संपादन',
+    category: 'श्रेणी',
+    monthlyBudgetAmount: 'मासिक बजट राशि',
+    selectCategory: 'कृपया एक श्रेणी चुनें।',
+    validAmount: 'कृपया एक मान्य बजट राशि दर्ज करें।',
+    duplicateBudget: 'इस श्रेणी के लिए बजट पहले से मौजूद है। कृपया मौजूदा को संपादित करें।',
+    deleteTitle: 'बजट हटाएं',
+    deleteMsg: 'क्या आप वाकई इस बजट को हटाना चाहते हैं?',
+    left: 'शेष',
+    over: 'अधिक',
+  },
+
+  // सभी खर्चे स्क्रीन
+  allExpenses: {
+    title: 'सभी खर्चे',
+    totalExpenses: 'कुल खर्चे',
+    newestFirst: 'नवीनतम पहले',
+    oldestFirst: 'पुराने पहले',
+    highestAmount: 'सबसे अधिक राशि',
+    lowestAmount: 'सबसे कम राशि',
+    noExpenses: 'अभी कोई खर्च नहीं',
+    noExpensesHint: 'अपना पहला खर्च जोड़कर खर्च ट्रैकिंग शुरू करें',
+    addExpense: 'खर्च जोड़ें',
+    expense: 'खर्च',
+  },
+
+  // भुगतान विधि लेबल
+  paymentMethods: {
+    cash: 'नकद',
+    upi: 'UPI',
+    debit_card: 'डेबिट कार्ड',
+    bank_transfer: 'बैंक ट्रांसफर',
+    credit_card: 'क्रेडिट कार्ड',
+    wallet: 'वॉलेट',
+    other: 'अन्य',
+  },
+
+  // आवर्ती फ्रीक्वेंसी
+  frequencies: {
+    daily: 'दैनिक',
+    weekly: 'साप्ताहिक',
+    biweekly: 'पाक्षिक',
+    monthly: 'मासिक',
+    quarterly: 'तिमाही',
+    yearly: 'वार्षिक',
+  },
+};
+
+export default hi;

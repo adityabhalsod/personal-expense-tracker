@@ -1,0 +1,346 @@
+// English translation strings for the Expense Tracker app
+
+const en = {
+  // Common shared strings
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    edit: 'Edit',
+    add: 'Add',
+    error: 'Error',
+    success: 'Success',
+    ok: 'OK',
+    loading: 'Loading your data...',
+    transactions: 'transactions',
+    transaction: 'transaction',
+    total: 'Total',
+  },
+
+  // Greeting messages based on time of day
+  greetings: {
+    morning: 'Good Morning',
+    afternoon: 'Good Afternoon',
+    evening: 'Good Evening',
+  },
+
+  // Relative date labels
+  dates: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+  },
+
+  // Month names
+  months: [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ],
+
+  // Tab navigation labels
+  tabs: {
+    home: 'Home',
+    expenses: 'Expenses',
+    analytics: 'Analytics',
+    wallet: 'Wallet',
+    settings: 'Settings',
+  },
+
+  // Home screen
+  home: {
+    dashboard: 'Dashboard',
+    startingBalance: 'Starting Balance',
+    remainingBalance: 'Remaining Balance',
+    totalSpent: 'Total Spent',
+    setupWallet: 'Set up your wallet',
+    addSalaryHint: 'Add your monthly salary to get started',
+    addExpense: 'Add Expense',
+    analytics: 'Analytics',
+    export: 'Export',
+    budgets: 'Budgets',
+    todaysSpending: "Today's Spending",
+    recentExpenses: 'Recent Expenses',
+    viewAll: 'View All',
+    noExpenses: 'No expenses yet',
+    tapToAdd: 'Tap + to add your first expense',
+  },
+
+  // Expenses screen
+  expenses: {
+    title: 'Expenses',
+    all: 'All',
+    today: 'Today',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    noExpenses: 'No expenses found',
+    addFirstExpense: 'Add your first expense to get started',
+    addExpense: 'Add Expense',
+  },
+
+  // Analytics screen
+  analytics: {
+    title: 'Analytics',
+    today: 'Today',
+    week: 'Week',
+    month: 'Month',
+    quarter: 'Quarter',
+    sixMonths: '6 Months',
+    year: 'Year',
+    totalSpent: 'Total Spent',
+    transactions: 'Transactions',
+    dailyAvg: 'Daily Avg',
+    spendingByCategory: 'Spending by Category',
+    topCategories: 'Top Categories',
+    spendingTrend: 'Spending Trend',
+    categoryDetails: 'Category Details',
+    noData: 'No spending data for this period',
+    addExpensesHint: 'Add some expenses to see your analytics',
+  },
+
+  // Wallet screen
+  wallet: {
+    title: 'Wallet',
+    remainingBalance: 'Remaining Balance',
+    startingBalance: 'Starting Balance',
+    totalSpent: 'Total Spent',
+    spent: 'spent',
+    addExpense: 'Add Expense',
+    editWallet: 'Edit Wallet',
+    budgets: 'Budgets',
+    setupTitle: 'Set Up Your Wallet',
+    setupSubtitle: 'Add your monthly salary or starting balance to begin tracking your finances for',
+    createWallet: 'Create Wallet',
+    walletHistory: 'Wallet History',
+    noHistory: 'No wallet history yet',
+  },
+
+  // Settings screen
+  settings: {
+    title: 'Settings',
+    appearance: 'APPEARANCE',
+    theme: 'Theme',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+    darkMode: 'Dark Mode',
+    general: 'GENERAL',
+    language: 'Language',
+    selectLanguage: 'Select Language',
+    defaultCurrency: 'Default Currency',
+    selectCurrency: 'Select Currency',
+    categories: 'Categories',
+    budgets: 'Budgets',
+    data: 'DATA',
+    exportReports: 'Export Reports',
+    security: 'SECURITY',
+    appLock: 'App Lock',
+    notifications: 'Notifications',
+    about: 'ABOUT',
+    version: 'Version',
+  },
+
+  // Add/Edit Expense screen
+  addExpense: {
+    title: 'Add Expense',
+    editTitle: 'Edit Expense',
+    amount: 'Amount',
+    date: 'Date',
+    category: 'Category',
+    paymentMethod: 'Payment Method',
+    notes: 'Notes',
+    notesPlaceholder: 'Add a note...',
+    tags: 'Tags',
+    tagsPlaceholder: 'e.g., lunch, office, team',
+    tagsHint: 'Separate tags with commas',
+    recurringExpense: 'Recurring Expense',
+    saveExpense: 'Save Expense',
+    updateExpense: 'Update Expense',
+    invalidAmount: 'Invalid Amount',
+    invalidAmountMsg: 'Please enter a valid amount greater than 0.',
+    noCategory: 'No Category',
+    noCategoryMsg: 'Please select a category for this expense.',
+    saveFailed: 'Failed to save expense. Please try again.',
+  },
+
+  // Expense Detail screen
+  expenseDetail: {
+    title: 'Expense Detail',
+    paymentMethod: 'Payment Method',
+    currency: 'Currency',
+    notes: 'Notes',
+    tags: 'Tags',
+    recurring: 'Recurring',
+    created: 'Created',
+    deleteTitle: 'Delete Expense',
+    deleteMsg: 'Are you sure you want to delete this expense? The amount will be restored to your wallet balance.',
+    editExpense: 'Edit Expense',
+    deleteExpense: 'Delete Expense',
+    notFound: 'Expense not found',
+  },
+
+  // Category Management screen
+  categoryManagement: {
+    title: 'Categories',
+    addCategory: 'Add Category',
+    defaultLabel: 'Default',
+    newCategory: 'New Category',
+    editCategory: 'Edit Category',
+    name: 'Name',
+    namePlaceholder: 'Category name',
+    icon: 'Icon',
+    color: 'Color',
+    monthlyBudget: 'Monthly Budget (Optional)',
+    saveCategory: 'Save Category',
+    deleteTitle: 'Delete Category',
+    deleteMsg: 'Are you sure you want to delete this category? Expenses in this category will not be affected.',
+  },
+
+  // Wallet Setup screen
+  walletSetup: {
+    title: 'Wallet Setup',
+    settingUpFor: 'Setting up wallet for',
+    walletName: 'Wallet Name',
+    walletNamePlaceholder: 'e.g., Monthly Salary',
+    startingBalance: 'Starting Balance / Salary',
+    balanceHint: 'This will be your starting balance for the month. Expenses will be deducted from this amount.',
+    createWallet: 'Create Wallet',
+    updateWallet: 'Update Wallet',
+  },
+
+  // Export Report screen
+  exportReport: {
+    title: 'Export Report',
+    selectTimePeriod: 'Select Time Period',
+    today: 'Today',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    quarter: 'Quarter',
+    sixMonths: '6 Months',
+    thisYear: 'This Year',
+    exportFormat: 'Export Format',
+    json: 'JSON',
+    jsonDesc: 'Structured data format',
+    csv: 'CSV',
+    csvDesc: 'Spreadsheet compatible',
+    excel: 'Excel',
+    excelDesc: 'Microsoft Excel format',
+    pdf: 'PDF',
+    pdfDesc: 'Printable report',
+    exportBtn: 'Export Report',
+    exporting: 'Exporting...',
+    noData: 'No Data',
+    noDataMsg: 'No expenses found for the selected period.',
+    exportFailed: 'Export Failed',
+    exportFailedMsg: 'Unable to export the report. Please try again.',
+  },
+
+  // Search screen
+  search: {
+    title: 'Search',
+    placeholder: 'Search expenses, notes, tags...',
+    noResults: 'No results found',
+    noResultsHint: 'Try different keywords or adjust filters',
+    searchExpenses: 'Search your expenses',
+    searchHint: 'Search by notes, category name, or tags',
+  },
+
+  // Security screen
+  security: {
+    title: 'Security',
+    appSecurity: 'App Security',
+    securityDesc: 'Protect your financial data with PIN or biometric authentication.',
+    biometricLock: 'Biometric Lock',
+    biometricDesc: 'Use fingerprint or face recognition',
+    pinLock: 'PIN Lock',
+    pinEnabled: 'PIN is enabled',
+    pinDisabled: 'Set a PIN to lock the app',
+    notAvailable: 'Not Available',
+    notAvailableMsg: 'This device does not support biometric authentication.',
+    notSetUp: 'Not Set Up',
+    notSetUpMsg: 'Please set up biometric authentication in your device settings first.',
+    verifyIdentity: 'Verify your identity to enable biometric lock',
+    invalidPin: 'Invalid PIN',
+    invalidPinMsg: 'PIN must be at least 4 digits.',
+    mismatch: 'Mismatch',
+    mismatchMsg: 'PINs do not match. Please try again.',
+    pinSuccess: 'PIN lock has been enabled.',
+    pinDisabledMsg: 'PIN lock has been removed.',
+    disabled: 'Disabled',
+    securityTip: 'For maximum security, we recommend enabling biometric authentication. Your data is always stored locally and encrypted on your device.',
+    enterPin: 'Enter PIN',
+    confirmPin: 'Confirm PIN',
+    setPin: 'Set PIN',
+  },
+
+  // PIN Lock screen
+  pinLock: {
+    enterPin: 'Enter PIN',
+    subtitle: 'Enter your PIN to unlock',
+    incorrectPin: 'Incorrect PIN',
+    tooManyAttempts: 'Too Many Attempts',
+    tooManyAttemptsMsg: 'Please try again later.',
+    unlockPrompt: 'Unlock Expense Tracker',
+    usePin: 'Use PIN',
+  },
+
+  // Budget Setup screen
+  budget: {
+    title: 'Budget Setup',
+    monthlyBudget: 'Monthly Budget',
+    spent: 'Spent',
+    budget: 'Budget',
+    used: 'used',
+    categoryBudgets: 'Category Budgets',
+    noBudgets: 'No Budgets Set',
+    noBudgetsHint: 'Create budgets to track your spending by category',
+    addBudget: 'Add Budget',
+    newBudget: 'New Budget',
+    editBudget: 'Edit Budget',
+    category: 'Category',
+    monthlyBudgetAmount: 'Monthly Budget Amount',
+    selectCategory: 'Please select a category.',
+    validAmount: 'Please enter a valid budget amount.',
+    duplicateBudget: 'A budget already exists for this category. Please edit the existing one.',
+    deleteTitle: 'Delete Budget',
+    deleteMsg: 'Are you sure you want to remove this budget?',
+    left: 'left',
+    over: 'over',
+  },
+
+  // All Expenses screen
+  allExpenses: {
+    title: 'All Expenses',
+    totalExpenses: 'Total Expenses',
+    newestFirst: 'Newest First',
+    oldestFirst: 'Oldest First',
+    highestAmount: 'Highest Amount',
+    lowestAmount: 'Lowest Amount',
+    noExpenses: 'No Expenses Yet',
+    noExpensesHint: 'Start tracking your spending by adding your first expense',
+    addExpense: 'Add Expense',
+    expense: 'Expense',
+  },
+
+  // Payment method labels
+  paymentMethods: {
+    cash: 'Cash',
+    upi: 'UPI',
+    debit_card: 'Debit Card',
+    bank_transfer: 'Bank Transfer',
+    credit_card: 'Credit Card',
+    wallet: 'Wallet',
+    other: 'Other',
+  },
+
+  // Recurring frequency labels
+  frequencies: {
+    daily: 'Daily',
+    weekly: 'Weekly',
+    biweekly: 'Bi-weekly',
+    monthly: 'Monthly',
+    quarterly: 'Quarterly',
+    yearly: 'Yearly',
+  },
+};
+
+export type TranslationKeys = typeof en;
+export default en;

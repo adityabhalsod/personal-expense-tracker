@@ -11,15 +11,22 @@ import { useAppStore } from '../store';
 import EmptyState from '../components/common/EmptyState';
 import { formatCurrency, formatRelativeDate } from '../utils/helpers';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
-
-// Filter options for the expense list
-const FILTERS = ['All', 'Today', 'This Week', 'This Month'] as const;
+import { useLanguage } from '../i18n';
 
 const ExpensesScreen = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
   const { expenses, categories, loadExpenses } = useAppStore();
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<string>('All'); // Currently selected filter
+
+  // Filter label keys for translation
+  const FILTERS = [
+    { key: 'All', label: t.expenses.all },
+    { key: 'Today', label: t.expenses.today },
+    { key: 'This Week', label: t.expenses.thisWeek },
+    { key: 'This Month', label: t.expenses.thisMonth },
+  ];
 
   // Refresh expenses when screen gains focus
   useFocusEffect(
@@ -96,7 +103,7 @@ const ExpensesScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Screen header with title and search button */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>Expenses</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>{t.expenses.title}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
           <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.text} />
         </TouchableOpacity>
@@ -106,23 +113,23 @@ const ExpensesScreen = () => {
       <View style={styles.filterRow}>
         {FILTERS.map((filter) => (
           <TouchableOpacity
-            key={filter}
+            key={filter.key}
             style={[
               styles.filterChip,
               {
-                backgroundColor: activeFilter === filter ? theme.colors.primary : theme.colors.surfaceVariant,
-                borderColor: activeFilter === filter ? theme.colors.primary : theme.colors.border,
+                backgroundColor: activeFilter === filter.key ? theme.colors.primary : theme.colors.surfaceVariant,
+                borderColor: activeFilter === filter.key ? theme.colors.primary : theme.colors.border,
               },
             ]}
-            onPress={() => setActiveFilter(filter)} // Switch active filter
+            onPress={() => setActiveFilter(filter.key)} // Switch active filter
           >
             <Text
               style={[
                 styles.filterText,
-                { color: activeFilter === filter ? '#FFFFFF' : theme.colors.text },
+                { color: activeFilter === filter.key ? '#FFFFFF' : theme.colors.text },
               ]}
             >
-              {filter}
+              {filter.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -131,7 +138,7 @@ const ExpensesScreen = () => {
       {/* Total amount summary for active filter */}
       <View style={[styles.totalBar, { backgroundColor: theme.colors.surfaceVariant }]}>
         <Text style={[styles.totalLabel, { color: theme.colors.textSecondary }]}>
-          {activeFilter} Total ({filteredExpenses.length} transactions)
+          {FILTERS.find(f => f.key === activeFilter)?.label} {t.common.total} ({filteredExpenses.length} {t.common.transactions})
         </Text>
         <Text style={[styles.totalAmount, { color: theme.colors.expense }]}>
           {formatCurrency(totalFiltered)}
@@ -148,9 +155,9 @@ const ExpensesScreen = () => {
         ListEmptyComponent={
           <EmptyState
             icon="receipt"
-            title="No expenses found"
-            subtitle="Add your first expense to get started"
-            actionLabel="Add Expense"
+            title={t.expenses.noExpenses}
+            subtitle={t.expenses.addFirstExpense}
+            actionLabel={t.expenses.addExpense}
             onAction={() => navigation.navigate('AddExpense', {})}
           />
         }

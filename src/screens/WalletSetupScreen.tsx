@@ -5,12 +5,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Button from '../components/common/Button';
-import { MONTH_NAMES } from '../constants';
 
 const WalletSetupScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const walletId = route.params?.walletId; // Null for new, ID for editing
@@ -76,25 +77,25 @@ const WalletSetupScreen = () => {
       <ScrollView style={styles.container}>
         {/* Month and year display header */}
         <View style={[styles.monthCard, { backgroundColor: theme.colors.primary }]}>
-          <Text style={styles.monthLabel}>Setting up wallet for</Text>
-          <Text style={styles.monthText}>{MONTH_NAMES[currentMonth - 1]} {currentYear}</Text>
+          <Text style={styles.monthLabel}>{t.walletSetup.settingUpFor}</Text>
+          <Text style={styles.monthText}>{t.months[currentMonth - 1]} {currentYear}</Text>
         </View>
 
         {/* Wallet name input */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Wallet Name</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.walletSetup.walletName}</Text>
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
             value={name}
             onChangeText={setName}
-            placeholder="e.g., Monthly Salary"
+            placeholder={t.walletSetup.walletNamePlaceholder}
             placeholderTextColor={theme.colors.textTertiary}
           />
         </View>
 
         {/* Starting balance input with large number display */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Starting Balance / Salary</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.walletSetup.startingBalance}</Text>
           <TextInput
             style={[styles.amountInput, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
             value={initialBalance}
@@ -105,14 +106,14 @@ const WalletSetupScreen = () => {
             autoFocus // Focus immediately for data entry
           />
           <Text style={[styles.hint, { color: theme.colors.textTertiary }]}>
-            This is the amount you start with at the beginning of the month. Expenses will be deducted from this balance.
+            {t.walletSetup.balanceHint}
           </Text>
         </View>
 
         {/* Save button */}
         <View style={styles.saveContainer}>
           <Button
-            title={walletId ? 'Update Wallet' : 'Create Wallet'}
+            title={walletId ? t.walletSetup.updateWallet : t.walletSetup.createWallet}
             onPress={handleSave}
             fullWidth
             size="large"

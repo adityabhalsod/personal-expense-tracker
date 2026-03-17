@@ -7,14 +7,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { formatCurrency } from '../utils/helpers';
-import { MONTH_NAMES } from '../constants';
 
 const WalletScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const { currentWallet, wallets, loadWallets, loadCurrentWallet } = useAppStore();
 
@@ -49,9 +50,9 @@ const WalletScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Screen header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Wallet</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{t.wallet.title}</Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            {MONTH_NAMES[currentMonth - 1]} {currentYear}
+            {t.months[currentMonth - 1]} {currentYear}
           </Text>
         </View>
 
@@ -68,7 +69,7 @@ const WalletScreen = () => {
               </View>
 
               {/* Large remaining balance display */}
-              <Text style={styles.balanceLabel}>Remaining Balance</Text>
+              <Text style={styles.balanceLabel}>{t.wallet.remainingBalance}</Text>
               <Text style={styles.balanceAmount}>
                 {formatCurrency(currentWallet.currentBalance, currentWallet.currency)}
               </Text>
@@ -83,7 +84,7 @@ const WalletScreen = () => {
                     ]}
                   />
                 </View>
-                <Text style={styles.progressText}>{spentPercentage.toFixed(0)}% spent</Text>
+                <Text style={styles.progressText}>{spentPercentage.toFixed(0)}% {t.wallet.spent}</Text>
               </View>
 
               {/* Income and expense summary at bottom of card */}
@@ -94,7 +95,7 @@ const WalletScreen = () => {
                     <MaterialCommunityIcons name="arrow-down" size={16} color={theme.colors.success} />
                   </View>
                   <View>
-                    <Text style={styles.summaryLabel}>Starting Balance</Text>
+                    <Text style={styles.summaryLabel}>{t.wallet.startingBalance}</Text>
                     <Text style={styles.summaryAmount}>
                       {formatCurrency(currentWallet.initialBalance, currentWallet.currency)}
                     </Text>
@@ -106,7 +107,7 @@ const WalletScreen = () => {
                     <MaterialCommunityIcons name="arrow-up" size={16} color={theme.colors.error} />
                   </View>
                   <View>
-                    <Text style={styles.summaryLabel}>Total Spent</Text>
+                    <Text style={styles.summaryLabel}>{t.wallet.totalSpent}</Text>
                     <Text style={[styles.summaryAmount, { color: '#FFB4B4' }]}>
                       {formatCurrency(totalSpent, currentWallet.currency)}
                     </Text>
@@ -122,21 +123,21 @@ const WalletScreen = () => {
                 onPress={() => navigation.navigate('AddExpense', {})}
               >
                 <MaterialCommunityIcons name="plus-circle" size={28} color={theme.colors.primary} />
-                <Text style={[styles.actionText, { color: theme.colors.text }]}>Add Expense</Text>
+                <Text style={[styles.actionText, { color: theme.colors.text }]}>{t.wallet.addExpense}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
                 onPress={() => navigation.navigate('WalletSetup', { walletId: currentWallet.id })}
               >
                 <MaterialCommunityIcons name="wallet-plus" size={28} color={theme.colors.success} />
-                <Text style={[styles.actionText, { color: theme.colors.text }]}>Edit Wallet</Text>
+                <Text style={[styles.actionText, { color: theme.colors.text }]}>{t.wallet.editWallet}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
                 onPress={() => navigation.navigate('BudgetSetup')}
               >
                 <MaterialCommunityIcons name="target" size={28} color={theme.colors.warning} />
-                <Text style={[styles.actionText, { color: theme.colors.text }]}>Budgets</Text>
+                <Text style={[styles.actionText, { color: theme.colors.text }]}>{t.wallet.budgets}</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -145,12 +146,12 @@ const WalletScreen = () => {
           <Card style={styles.setupCard}>
             <View style={styles.setupContent}>
               <MaterialCommunityIcons name="wallet-plus" size={64} color={theme.colors.primary} />
-              <Text style={[styles.setupTitle, { color: theme.colors.text }]}>Set Up Your Wallet</Text>
+              <Text style={[styles.setupTitle, { color: theme.colors.text }]}>{t.wallet.setupTitle}</Text>
               <Text style={[styles.setupSubtitle, { color: theme.colors.textSecondary }]}>
-                Add your monthly salary or starting balance to begin tracking your finances for {MONTH_NAMES[currentMonth - 1]}.
+                {t.wallet.setupSubtitle} {t.months[currentMonth - 1]}.
               </Text>
               <Button
-                title="Create Wallet"
+                title={t.wallet.createWallet}
                 onPress={() => navigation.navigate('WalletSetup')}
                 variant="primary"
                 size="large"
@@ -161,7 +162,7 @@ const WalletScreen = () => {
 
         {/* Wallet history section showing past months */}
         <View style={styles.historyHeader}>
-          <Text style={[styles.historyTitle, { color: theme.colors.text }]}>Wallet History</Text>
+          <Text style={[styles.historyTitle, { color: theme.colors.text }]}>{t.wallet.walletHistory}</Text>
         </View>
 
         {wallets.length > 0 ? (
@@ -171,7 +172,7 @@ const WalletScreen = () => {
                 <View>
                   {/* Month and year label */}
                   <Text style={[styles.historyMonth, { color: theme.colors.text }]}>
-                    {MONTH_NAMES[wallet.month - 1]} {wallet.year}
+                    {t.months[wallet.month - 1]} {wallet.year}
                   </Text>
                   {/* Balance ratio display */}
                   <Text style={[styles.historyBalance, { color: theme.colors.textSecondary }]}>
@@ -186,7 +187,7 @@ const WalletScreen = () => {
                   <Text style={[styles.historyPercent, { color: theme.colors.textTertiary }]}>
                     {wallet.initialBalance > 0
                       ? ((wallet.initialBalance - wallet.currentBalance) / wallet.initialBalance * 100).toFixed(0)
-                      : 0}% spent
+                      : 0}% {t.wallet.spent}
                   </Text>
                 </View>
               </View>
@@ -194,7 +195,7 @@ const WalletScreen = () => {
           ))
         ) : (
           <Card>
-            <Text style={[styles.noHistory, { color: theme.colors.textSecondary }]}>No wallet history yet</Text>
+            <Text style={[styles.noHistory, { color: theme.colors.textSecondary }]}>{t.wallet.noHistory}</Text>
           </Card>
         )}
 

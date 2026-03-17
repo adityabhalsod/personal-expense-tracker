@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Vibration, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import * as LocalAuthentication from 'expo-local-authentication';
 
@@ -14,6 +15,7 @@ interface Props {
 
 const PinLockScreen = ({ onAuthenticated }: Props) => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { settings } = useAppStore();
 
   const [pin, setPin] = useState(''); // Current PIN input
@@ -30,8 +32,8 @@ const PinLockScreen = ({ onAuthenticated }: Props) => {
   // Attempt biometric authentication
   const handleBiometric = useCallback(async () => {
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Unlock Expense Tracker',
-      cancelLabel: 'Use PIN',
+      promptMessage: t.pinLock.unlockPrompt,
+      cancelLabel: t.pinLock.usePin,
       disableDeviceFallback: true,
     });
 
@@ -55,12 +57,12 @@ const PinLockScreen = ({ onAuthenticated }: Props) => {
         // Wrong PIN — vibrate and show error
         Vibration.vibrate(200);
         setAttempts(prev => prev + 1);
-        setError('Incorrect PIN');
+        setError(t.pinLock.incorrectPin);
         setPin('');
 
         // Lock out after 5 failed attempts
         if (attempts >= 4) {
-          Alert.alert('Too Many Attempts', 'Please try again later.');
+          Alert.alert(t.pinLock.tooManyAttempts, t.pinLock.tooManyAttemptsMsg);
         }
       }
     }
@@ -82,9 +84,9 @@ const PinLockScreen = ({ onAuthenticated }: Props) => {
         <View style={[styles.lockIcon, { backgroundColor: theme.colors.primary + '15' }]}>
           <MaterialCommunityIcons name="lock" size={40} color={theme.colors.primary} />
         </View>
-        <Text style={[styles.title, { color: theme.colors.text }]}>Enter PIN</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>{t.pinLock.enterPin}</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          Enter your PIN to unlock
+          {t.pinLock.subtitle}
         </Text>
       </View>
 

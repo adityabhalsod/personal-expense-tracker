@@ -55,6 +55,7 @@ export const CHART_COLORS = [
 // Default app settings applied on first launch
 export const DEFAULT_SETTINGS = {
   theme: 'system' as const, // Follow system appearance
+  language: 'en' as const, // Default language is English
   defaultCurrency: 'INR', // Default currency for new expenses
   defaultPaymentMethod: 'cash' as PaymentMethod, // Default payment method
   enableBiometric: false, // Biometric lock off by default

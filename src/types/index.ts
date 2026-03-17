@@ -82,6 +82,7 @@ export interface Currency {
 // App-level settings stored in secure storage
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system'; // Appearance mode preference
+  language: 'en' | 'gu' | 'hi'; // Display language preference
   defaultCurrency: string; // Default currency code for new expenses
   defaultPaymentMethod: PaymentMethod; // Default payment method
   enableBiometric: boolean; // Whether biometric lock is enabled

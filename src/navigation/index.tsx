@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { RootStackParamList, TabParamList } from '../types';
 
 // Screen imports for tab navigation
@@ -36,6 +37,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // Bottom tab navigator with 5 main sections of the app
 const TabNavigator = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
@@ -67,6 +69,7 @@ const TabNavigator = () => {
         name="Home"
         component={HomeScreen}
         options={{
+          tabBarLabel: t.tabs.home,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
@@ -77,6 +80,7 @@ const TabNavigator = () => {
         name="Expenses"
         component={ExpensesScreen}
         options={{
+          tabBarLabel: t.tabs.expenses,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="format-list-bulleted" size={size} color={color} />
           ),
@@ -87,6 +91,7 @@ const TabNavigator = () => {
         name="Analytics"
         component={AnalyticsScreen}
         options={{
+          tabBarLabel: t.tabs.analytics,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="chart-arc" size={size} color={color} />
           ),
@@ -97,6 +102,7 @@ const TabNavigator = () => {
         name="Wallet"
         component={WalletScreen}
         options={{
+          tabBarLabel: t.tabs.wallet,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="wallet" size={size} color={color} />
           ),
@@ -107,6 +113,7 @@ const TabNavigator = () => {
         name="Settings"
         component={SettingsScreen}
         options={{
+          tabBarLabel: t.tabs.settings,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
@@ -119,6 +126,7 @@ const TabNavigator = () => {
 // Root stack navigator combining tabs with modal/detail screens
 const AppNavigator = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <NavigationContainer>
@@ -141,25 +149,25 @@ const AppNavigator = () => {
         {/* Main tab navigator as the home screen */}
         <Stack.Screen name="MainTabs" component={TabNavigator} options={{ headerShown: false }} />
         {/* Add/Edit expense form */}
-        <Stack.Screen name="AddExpense" component={AddExpenseScreen} options={{ title: 'Add Expense' }} />
+        <Stack.Screen name="AddExpense" component={AddExpenseScreen} options={{ title: t.addExpense.title }} />
         {/* Single expense detail view */}
-        <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} options={{ title: 'Expense Detail' }} />
+        <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} options={{ title: t.expenseDetail.title }} />
         {/* Category management CRUD screen */}
-        <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} options={{ title: 'Categories' }} />
+        <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} options={{ title: t.categoryManagement.title }} />
         {/* Wallet creation/edit form */}
-        <Stack.Screen name="WalletSetup" component={WalletSetupScreen} options={{ title: 'Wallet Setup' }} />
+        <Stack.Screen name="WalletSetup" component={WalletSetupScreen} options={{ title: t.walletSetup.title }} />
         {/* Export report configuration */}
-        <Stack.Screen name="ExportReport" component={ExportReportScreen} options={{ title: 'Export Report' }} />
+        <Stack.Screen name="ExportReport" component={ExportReportScreen} options={{ title: t.exportReport.title }} />
         {/* Search and filter screen */}
-        <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search' }} />
+        <Stack.Screen name="Search" component={SearchScreen} options={{ title: t.search.title }} />
         {/* Security settings (PIN/Biometric) */}
-        <Stack.Screen name="Security" component={SecurityScreen} options={{ title: 'Security' }} />
+        <Stack.Screen name="Security" component={SecurityScreen} options={{ title: t.security.title }} />
         {/* Cloud Backup feature commented out for now */}
         {/* <Stack.Screen name="CloudBackup" component={CloudBackupScreen} options={{ title: 'Cloud Backup' }} /> */}
         {/* Budget setup and management */}
-        <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} options={{ title: 'Budget Setup' }} />
+        <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} options={{ title: t.budget.title }} />
         {/* All expenses view with full list */}
-        <Stack.Screen name="AllExpenses" component={AllExpensesScreen} options={{ title: 'All Expenses' }} />
+        <Stack.Screen name="AllExpenses" component={AllExpensesScreen} options={{ title: t.allExpenses.title }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

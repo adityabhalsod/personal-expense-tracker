@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
 import EmptyState from '../components/common/EmptyState';
@@ -20,6 +21,7 @@ type SortOption = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
 
 const AllExpensesScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const { expenses, categories, settings, loadExpenses } = useAppStore();
 
@@ -96,10 +98,10 @@ const AllExpensesScreen = () => {
   // Human-readable sort label for current selection
   const getSortLabel = () => {
     switch (sortBy) {
-      case 'date_desc': return 'Newest First';
-      case 'date_asc': return 'Oldest First';
-      case 'amount_desc': return 'Highest Amount';
-      case 'amount_asc': return 'Lowest Amount';
+      case 'date_desc': return t.allExpenses.newestFirst;
+      case 'date_asc': return t.allExpenses.oldestFirst;
+      case 'amount_desc': return t.allExpenses.highestAmount;
+      case 'amount_asc': return t.allExpenses.lowestAmount;
     }
   };
 
@@ -124,7 +126,7 @@ const AllExpensesScreen = () => {
         </View>
         <View style={styles.expenseInfo}>
           <Text style={[styles.expenseName, { color: theme.colors.text }]} numberOfLines={1}>
-            {expense.notes || category?.name || 'Expense'}
+            {expense.notes || category?.name || t.allExpenses.expense}
           </Text>
           <Text style={[styles.expensePayment, { color: theme.colors.textTertiary }]}>
             {expense.paymentMethod.replace('_', ' ')}
@@ -142,7 +144,7 @@ const AllExpensesScreen = () => {
       {/* Summary bar showing total and sort control */}
       <View style={[styles.summaryBar, { backgroundColor: theme.colors.surface }]}>
         <View>
-          <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>Total Expenses</Text>
+          <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>{t.allExpenses.totalExpenses}</Text>
           <Text style={[styles.summaryAmount, { color: theme.colors.text }]}>
             {formatCurrency(totalAmount, settings.defaultCurrency)}
           </Text>
@@ -159,9 +161,9 @@ const AllExpensesScreen = () => {
       {expenses.length === 0 ? (
         <EmptyState
           icon="receipt"
-          title="No Expenses Yet"
-          subtitle="Start tracking your spending by adding your first expense"
-          actionLabel="Add Expense"
+          title={t.allExpenses.noExpenses}
+          subtitle={t.allExpenses.noExpensesHint}
+          actionLabel={t.allExpenses.addExpense}
           onAction={() => navigation.navigate('AddExpense')}
         />
       ) : (

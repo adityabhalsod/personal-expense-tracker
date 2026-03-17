@@ -8,6 +8,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import { PaymentMethod, RecurringFrequency } from '../types';
 import { PAYMENT_METHODS } from '../constants';
@@ -17,6 +18,7 @@ import Button from '../components/common/Button';
 
 const AddExpenseScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const expenseId = route.params?.expenseId; // Null for new expense, ID for editing
@@ -74,7 +76,7 @@ const AddExpenseScreen = () => {
         setIsRecurring(expense.isRecurring);
         if (expense.recurringFrequency) setRecurringFrequency(expense.recurringFrequency);
         // Update header title to indicate edit mode
-        navigation.setOptions({ title: 'Edit Expense' });
+        navigation.setOptions({ title: t.addExpense.editTitle });
       }
     }
   }, [expenseId]);
@@ -83,11 +85,11 @@ const AddExpenseScreen = () => {
   const handleSave = async () => {
     // Validate required fields before saving
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount greater than 0.');
+      Alert.alert(t.addExpense.invalidAmount, t.addExpense.invalidAmountMsg);
       return;
     }
     if (!selectedCategory) {
-      Alert.alert('No Category', 'Please select a category for this expense.');
+      Alert.alert(t.addExpense.noCategory, t.addExpense.noCategoryMsg);
       return;
     }
 
@@ -115,7 +117,7 @@ const AddExpenseScreen = () => {
       }
       navigation.goBack(); // Return to previous screen on success
     } catch (error) {
-      Alert.alert('Error', 'Failed to save expense. Please try again.');
+      Alert.alert(t.common.error, t.addExpense.saveFailed);
     } finally {
       setLoading(false);
     }
@@ -123,12 +125,12 @@ const AddExpenseScreen = () => {
 
   // Available recurring frequency options
   const frequencies: { value: RecurringFrequency; label: string }[] = [
-    { value: 'daily', label: 'Daily' },
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'biweekly', label: 'Bi-weekly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Quarterly' },
-    { value: 'yearly', label: 'Yearly' },
+    { value: 'daily', label: t.frequencies.daily },
+    { value: 'weekly', label: t.frequencies.weekly },
+    { value: 'biweekly', label: t.frequencies.biweekly },
+    { value: 'monthly', label: t.frequencies.monthly },
+    { value: 'quarterly', label: t.frequencies.quarterly },
+    { value: 'yearly', label: t.frequencies.yearly },
   ];
 
   return (
@@ -140,7 +142,7 @@ const AddExpenseScreen = () => {
       <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Amount input with large display for easy data entry */}
         <View style={[styles.amountContainer, { backgroundColor: theme.colors.primary }]}>
-          <Text style={styles.amountLabel}>Amount</Text>
+          <Text style={styles.amountLabel}>{t.addExpense.amount}</Text>
           <View style={styles.amountRow}>
             <Text style={styles.currencySymbol}>₹</Text>
             <TextInput
@@ -157,7 +159,7 @@ const AddExpenseScreen = () => {
 
         {/* Date picker field - tap to open native date picker */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Date</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.addExpense.date}</Text>
           <TouchableOpacity
             style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}
             onPress={() => setShowDatePicker(true)} // Open date picker on tap
@@ -181,7 +183,7 @@ const AddExpenseScreen = () => {
 
         {/* Category selection grid with scrollable chips */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Category</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.addExpense.category}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
             {uniqueCategories.map((cat) => (
               <TouchableOpacity
@@ -212,7 +214,7 @@ const AddExpenseScreen = () => {
 
         {/* Payment method selector as horizontal chips */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Payment Method</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.addExpense.paymentMethod}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {PAYMENT_METHODS.map((method) => (
               <TouchableOpacity
@@ -238,7 +240,7 @@ const AddExpenseScreen = () => {
                     { color: paymentMethod === method.value ? theme.colors.primary : theme.colors.text },
                   ]}
                 >
-                  {method.label}
+                  {(t.paymentMethods as Record<string, string>)[method.value] || method.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -247,12 +249,12 @@ const AddExpenseScreen = () => {
 
         {/* Notes text area for additional details */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Notes</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.addExpense.notes}</Text>
           <TextInput
             style={[styles.textArea, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
             value={notes}
             onChangeText={setNotes}
-            placeholder="Add a note..."
+            placeholder={t.addExpense.notesPlaceholder}
             placeholderTextColor={theme.colors.textTertiary}
             multiline
             numberOfLines={3}
@@ -263,16 +265,16 @@ const AddExpenseScreen = () => {
 
         {/* Tags input for searchable labels */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Tags</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t.addExpense.tags}</Text>
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
             value={tags}
             onChangeText={setTags}
-            placeholder="e.g., lunch, office, team"
+            placeholder={t.addExpense.tagsPlaceholder}
             placeholderTextColor={theme.colors.textTertiary}
             onFocus={scrollToField} // Scroll field into view above keyboard
           />
-          <Text style={[styles.hint, { color: theme.colors.textTertiary }]}>Separate tags with commas</Text>
+          <Text style={[styles.hint, { color: theme.colors.textTertiary }]}>{t.addExpense.tagsHint}</Text>
         </View>
 
         {/* Recurring expense toggle and frequency selector */}
@@ -286,7 +288,7 @@ const AddExpenseScreen = () => {
               size={24}
               color={isRecurring ? theme.colors.primary : theme.colors.textSecondary}
             />
-            <Text style={[styles.recurringText, { color: theme.colors.text }]}>Recurring Expense</Text>
+            <Text style={[styles.recurringText, { color: theme.colors.text }]}>{t.addExpense.recurringExpense}</Text>
           </TouchableOpacity>
 
           {/* Show frequency options only when recurring is enabled */}
@@ -322,7 +324,7 @@ const AddExpenseScreen = () => {
         {/* Save button to submit the form */}
         <View style={styles.saveContainer}>
           <Button
-            title={expenseId ? 'Update Expense' : 'Save Expense'}
+            title={expenseId ? t.addExpense.updateExpense : t.addExpense.saveExpense}
             onPress={handleSave}
             loading={loading}
             fullWidth

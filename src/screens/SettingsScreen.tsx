@@ -9,12 +9,15 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAppStore } from '../store';
 import { CURRENCIES } from '../constants';
+import { useLanguage, LANGUAGES } from '../i18n';
 
 const SettingsScreen = () => {
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const { settings, updateSettings } = useAppStore();
+  const { t, language, setLanguage } = useLanguage();
   const [showCurrencyModal, setShowCurrencyModal] = useState(false); // Currency picker modal visibility
+  const [showLanguageModal, setShowLanguageModal] = useState(false); // Language picker modal visibility
 
   // Toggle between light, dark, and system theme modes
   const cycleTheme = () => {
@@ -27,10 +30,16 @@ const SettingsScreen = () => {
   // Get display label for the current theme mode
   const getThemeLabel = () => {
     switch (themeMode) {
-      case 'light': return 'Light';
-      case 'dark': return 'Dark';
-      case 'system': return 'System';
+      case 'light': return t.settings.light;
+      case 'dark': return t.settings.dark;
+      case 'system': return t.settings.system;
     }
+  };
+
+  // Get display label for the current language
+  const getLanguageLabel = () => {
+    const lang = LANGUAGES.find(l => l.code === language);
+    return lang?.nativeLabel || 'English';
   };
 
   // Open modal-based currency picker (Alert.alert only supports 3 buttons on Android)
@@ -63,16 +72,16 @@ const SettingsScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Screen header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Settings</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{t.settings.title}</Text>
         </View>
 
         {/* Appearance section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>APPEARANCE</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.appearance}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <SettingsRow icon="theme-light-dark" label="Theme" value={getThemeLabel()} onPress={cycleTheme} />
+          <SettingsRow icon="theme-light-dark" label={t.settings.theme} value={getThemeLabel()} onPress={cycleTheme} />
           <SettingsRow
             icon="brightness-6"
-            label="Dark Mode"
+            label={t.settings.darkMode}
             rightElement={
               <Switch
                 value={isDark}
@@ -85,33 +94,39 @@ const SettingsScreen = () => {
         </View>
 
         {/* General preferences section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>GENERAL</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.general}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
           <SettingsRow
+            icon="translate"
+            label={t.settings.language}
+            value={getLanguageLabel()}
+            onPress={() => setShowLanguageModal(true)}
+          />
+          <SettingsRow
             icon="currency-usd"
-            label="Default Currency"
+            label={t.settings.defaultCurrency}
             value={`${CURRENCIES.find(c => c.code === settings.defaultCurrency)?.symbol} ${settings.defaultCurrency}`}
             onPress={showCurrencyPicker}
           />
-          <SettingsRow icon="shape" label="Categories" onPress={() => navigation.navigate('CategoryManagement')} />
-          <SettingsRow icon="target" label="Budgets" onPress={() => navigation.navigate('BudgetSetup')} />
+          <SettingsRow icon="shape" label={t.settings.categories} onPress={() => navigation.navigate('CategoryManagement')} />
+          <SettingsRow icon="target" label={t.settings.budgets} onPress={() => navigation.navigate('BudgetSetup')} />
         </View>
 
         {/* Data management section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>DATA</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.data}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <SettingsRow icon="download" label="Export Reports" onPress={() => navigation.navigate('ExportReport')} />
+          <SettingsRow icon="download" label={t.settings.exportReports} onPress={() => navigation.navigate('ExportReport')} />
           {/* Cloud Backup feature commented out for now */}
           {/* <SettingsRow icon="cloud-upload" label="Cloud Backup" onPress={() => navigation.navigate('CloudBackup')} /> */}
         </View>
 
         {/* Security section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>SECURITY</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.security}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <SettingsRow icon="lock" label="App Lock" onPress={() => navigation.navigate('Security')} />
+          <SettingsRow icon="lock" label={t.settings.appLock} onPress={() => navigation.navigate('Security')} />
           <SettingsRow
             icon="bell"
-            label="Notifications"
+            label={t.settings.notifications}
             rightElement={
               <Switch
                 value={settings.enableNotifications}
@@ -124,9 +139,9 @@ const SettingsScreen = () => {
         </View>
 
         {/* About section */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>ABOUT</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.about}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <SettingsRow icon="information" label="Version" value="1.0.0" />
+          <SettingsRow icon="information" label={t.settings.version} value="1.0.0" />
         </View>
 
         {/* Bottom spacer */}
@@ -144,7 +159,7 @@ const SettingsScreen = () => {
           <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
             {/* Modal header with title and close button */}
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Currency</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t.settings.selectCurrency}</Text>
               <TouchableOpacity onPress={() => setShowCurrencyModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
@@ -176,6 +191,57 @@ const SettingsScreen = () => {
                   </View>
                   {/* Checkmark for currently selected currency */}
                   {settings.defaultCurrency === item.code && (
+                    <MaterialCommunityIcons name="check-circle" size={22} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Language picker modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>{t.settings.selectLanguage}</Text>
+              <TouchableOpacity onPress={() => setShowLanguageModal(false)}>
+                <MaterialCommunityIcons name="close" size={24} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={LANGUAGES}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.currencyRow,
+                    {
+                      borderBottomColor: theme.colors.border,
+                      backgroundColor: language === item.code
+                        ? theme.colors.primary + '15'
+                        : 'transparent',
+                    },
+                  ]}
+                  onPress={() => {
+                    setLanguage(item.code);
+                    setShowLanguageModal(false);
+                  }}
+                >
+                  <Text style={[styles.currencySymbol, { color: theme.colors.primary }]}>
+                    {item.code === 'en' ? '🇬🇧' : item.code === 'gu' ? '🇮🇳' : '🇮🇳'}
+                  </Text>
+                  <View style={styles.currencyInfo}>
+                    <Text style={[styles.currencyName, { color: theme.colors.text }]}>{item.nativeLabel}</Text>
+                    <Text style={[styles.currencyCode, { color: theme.colors.textSecondary }]}>{item.label}</Text>
+                  </View>
+                  {language === item.code && (
                     <MaterialCommunityIcons name="check-circle" size={22} color={theme.colors.primary} />
                   )}
                 </TouchableOpacity>

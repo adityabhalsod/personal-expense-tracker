@@ -11,11 +11,13 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useAppStore } from '../store';
 import Card from '../components/common/Card';
-import { formatCurrency, getGreeting, formatRelativeDate } from '../utils/helpers';
+import { formatCurrency, formatRelativeDate } from '../utils/helpers';
+import { useLanguage } from '../i18n';
 
 const HomeScreen = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
+  const { t } = useLanguage();
 
   // Subscribe to relevant store slices for reactive updates
   const { expenses, currentWallet, categories, isLoading, initialize, loadExpenses, loadCurrentWallet } = useAppStore();
@@ -51,6 +53,14 @@ const HomeScreen = () => {
     return { icon: cat?.icon || 'help-circle', color: cat?.color || '#999' };
   };
 
+  // Get time-based greeting using translations
+  const getLocalizedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t.greetings.morning;
+    if (hour < 17) return t.greetings.afternoon;
+    return t.greetings.evening;
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
@@ -60,8 +70,8 @@ const HomeScreen = () => {
         {/* Header with greeting and search button */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>{getGreeting()}</Text>
-            <Text style={[styles.title, { color: theme.colors.text }]}>Dashboard</Text>
+            <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>{getLocalizedGreeting()}</Text>
+            <Text style={[styles.title, { color: theme.colors.text }]}>{t.home.dashboard}</Text>
           </View>
           {/* Search icon navigates to the search screen */}
           <TouchableOpacity
@@ -79,21 +89,21 @@ const HomeScreen = () => {
               <>
                 {/* Starting balance display */}
                 <View style={styles.walletRow}>
-                  <Text style={styles.walletLabel}>Starting Balance</Text>
+                  <Text style={styles.walletLabel}>{t.home.startingBalance}</Text>
                   <Text style={styles.walletAmount}>
                     {formatCurrency(currentWallet.initialBalance, currentWallet.currency)}
                   </Text>
                 </View>
                 {/* Current remaining balance (large emphasis) */}
                 <View style={styles.walletMainBalance}>
-                  <Text style={styles.walletBalanceLabel}>Remaining Balance</Text>
+                  <Text style={styles.walletBalanceLabel}>{t.home.remainingBalance}</Text>
                   <Text style={styles.walletBalance}>
                     {formatCurrency(currentWallet.currentBalance, currentWallet.currency)}
                   </Text>
                 </View>
                 {/* Total spent this month */}
                 <View style={styles.walletRow}>
-                  <Text style={styles.walletLabel}>Total Spent</Text>
+                  <Text style={styles.walletLabel}>{t.home.totalSpent}</Text>
                   <Text style={styles.walletSpent}>
                     {formatCurrency(currentWallet.initialBalance - currentWallet.currentBalance, currentWallet.currency)}
                   </Text>
@@ -103,8 +113,8 @@ const HomeScreen = () => {
               // Prompt user to set up their wallet if none exists
               <TouchableOpacity onPress={() => navigation.navigate('WalletSetup')} style={styles.walletSetup}>
                 <MaterialCommunityIcons name="wallet-plus" size={40} color="rgba(255,255,255,0.9)" />
-                <Text style={styles.walletSetupText}>Set up your wallet</Text>
-                <Text style={styles.walletSetupSubtext}>Add your monthly salary to get started</Text>
+                <Text style={styles.walletSetupText}>{t.home.setupWallet}</Text>
+                <Text style={styles.walletSetupSubtext}>{t.home.addSalaryHint}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -120,7 +130,7 @@ const HomeScreen = () => {
             <View style={[styles.quickActionIcon, { backgroundColor: '#EEF2FF' }]}>
               <MaterialCommunityIcons name="plus" size={24} color={theme.colors.primary} />
             </View>
-            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>Add Expense</Text>
+            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.addExpense}</Text>
           </TouchableOpacity>
 
           {/* Analytics button */}
@@ -131,7 +141,7 @@ const HomeScreen = () => {
             <View style={[styles.quickActionIcon, { backgroundColor: '#FEF3C7' }]}>
               <MaterialCommunityIcons name="chart-line" size={24} color="#F59E0B" />
             </View>
-            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>Analytics</Text>
+            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.analytics}</Text>
           </TouchableOpacity>
 
           {/* Export button */}
@@ -142,7 +152,7 @@ const HomeScreen = () => {
             <View style={[styles.quickActionIcon, { backgroundColor: '#ECFDF5' }]}>
               <MaterialCommunityIcons name="download" size={24} color="#10B981" />
             </View>
-            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>Export</Text>
+            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.export}</Text>
           </TouchableOpacity>
 
           {/* Budget button */}
@@ -153,7 +163,7 @@ const HomeScreen = () => {
             <View style={[styles.quickActionIcon, { backgroundColor: '#FEE2E2' }]}>
               <MaterialCommunityIcons name="target" size={24} color="#EF4444" />
             </View>
-            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>Budgets</Text>
+            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.budgets}</Text>
           </TouchableOpacity>
         </View>
 
@@ -161,7 +171,7 @@ const HomeScreen = () => {
         <Card style={styles.todayCard}>
           <View style={styles.todayHeader}>
             <MaterialCommunityIcons name="calendar-today" size={20} color={theme.colors.primary} />
-            <Text style={[styles.todayTitle, { color: theme.colors.text }]}>Today's Spending</Text>
+            <Text style={[styles.todayTitle, { color: theme.colors.text }]}>{t.home.todaysSpending}</Text>
           </View>
           <Text style={[styles.todayAmount, { color: theme.colors.expense }]}>
             {formatCurrency(todayTotal)}
@@ -170,10 +180,10 @@ const HomeScreen = () => {
 
         {/* Recent expenses list section */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Recent Expenses</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t.home.recentExpenses}</Text>
           {/* View All link navigates to full expense list */}
           <TouchableOpacity onPress={() => navigation.navigate('AllExpenses')}>
-            <Text style={[styles.viewAll, { color: theme.colors.primary }]}>View All</Text>
+            <Text style={[styles.viewAll, { color: theme.colors.primary }]}>{t.home.viewAll}</Text>
           </TouchableOpacity>
         </View>
 
@@ -219,9 +229,9 @@ const HomeScreen = () => {
           <Card>
             <View style={styles.emptyState}>
               <MaterialCommunityIcons name="receipt" size={48} color={theme.colors.textTertiary} />
-              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>No expenses yet</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>{t.home.noExpenses}</Text>
               <Text style={[styles.emptySubtext, { color: theme.colors.textTertiary }]}>
-                Tap + to add your first expense
+                {t.home.tapToAdd}
               </Text>
             </View>
           </Card>

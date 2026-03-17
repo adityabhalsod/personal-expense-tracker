@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { useLanguage } from '../i18n';
 import { useAppStore } from '../store';
 import Button from '../components/common/Button';
 
@@ -29,6 +30,7 @@ const COLOR_OPTIONS = [
 
 const CategoryManagementScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { categories, addCategory, updateCategory, deleteCategory } = useAppStore();
 
   // Modal state for add/edit form
@@ -95,8 +97,8 @@ const CategoryManagementScreen = () => {
       return;
     }
     Alert.alert('Delete Category', 'Are you sure? Existing expenses will keep this category name.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(id) },
+      { text: t.common.cancel, style: 'cancel' },
+      { text: t.common.delete, style: 'destructive', onPress: () => deleteCategory(id) },
     ]);
   };
 
@@ -108,7 +110,7 @@ const CategoryManagementScreen = () => {
         onPress={openAddModal}
       >
         <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
-        <Text style={styles.addButtonText}>Add Category</Text>
+        <Text style={styles.addButtonText}>{t.categoryManagement.addCategory}</Text>
       </TouchableOpacity>
 
       {/* Category list showing all categories */}
@@ -136,7 +138,7 @@ const CategoryManagementScreen = () => {
             {/* Default badge indicator */}
             {cat.isDefault && (
               <View style={[styles.defaultBadge, { backgroundColor: theme.colors.chipBackground }]}>
-                <Text style={[styles.defaultText, { color: theme.colors.chipText }]}>Default</Text>
+                <Text style={[styles.defaultText, { color: theme.colors.chipText }]}>{t.categoryManagement.defaultLabel}</Text>
               </View>
             )}
             <MaterialCommunityIcons name="chevron-right" size={20} color={theme.colors.textTertiary} />
@@ -156,7 +158,7 @@ const CategoryManagementScreen = () => {
             {/* Modal header with title and close button */}
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
-                {editingId ? 'Edit Category' : 'New Category'}
+                {editingId ? t.categoryManagement.editCategory : t.categoryManagement.newCategory}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
@@ -165,17 +167,17 @@ const CategoryManagementScreen = () => {
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {/* Category name input */}
-              <Text style={[styles.label, { color: theme.colors.text }]}>Name</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>{t.categoryManagement.name}</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
                 value={name}
                 onChangeText={setName}
-                placeholder="Category name"
+                placeholder={t.categoryManagement.namePlaceholder}
                 placeholderTextColor={theme.colors.textTertiary}
               />
 
               {/* Icon selection grid */}
-              <Text style={[styles.label, { color: theme.colors.text }]}>Icon</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>{t.categoryManagement.icon}</Text>
               <View style={styles.optionsGrid}>
                 {ICON_OPTIONS.map((icon) => (
                   <TouchableOpacity
@@ -196,7 +198,7 @@ const CategoryManagementScreen = () => {
               </View>
 
               {/* Color selection grid */}
-              <Text style={[styles.label, { color: theme.colors.text }]}>Color</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>{t.categoryManagement.color}</Text>
               <View style={styles.optionsGrid}>
                 {COLOR_OPTIONS.map((color) => (
                   <TouchableOpacity
@@ -215,7 +217,7 @@ const CategoryManagementScreen = () => {
               </View>
 
               {/* Optional budget limit input */}
-              <Text style={[styles.label, { color: theme.colors.text }]}>Monthly Budget (Optional)</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>{t.categoryManagement.monthlyBudget}</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
                 value={budget}
@@ -227,7 +229,7 @@ const CategoryManagementScreen = () => {
 
               {/* Save button */}
               <View style={styles.modalActions}>
-                <Button title="Save Category" onPress={handleSave} fullWidth size="large" />
+                <Button title={t.categoryManagement.saveCategory} onPress={handleSave} fullWidth size="large" />
               </View>
             </ScrollView>
           </View>

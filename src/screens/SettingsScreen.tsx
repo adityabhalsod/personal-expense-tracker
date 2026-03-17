@@ -1,8 +1,8 @@
 // Settings screen with theme toggle, currency selection, and navigation to sub-settings
 // Central hub for all app configuration options
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +14,7 @@ const SettingsScreen = () => {
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const { settings, updateSettings } = useAppStore();
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false); // Currency picker modal visibility
 
   // Toggle between light, dark, and system theme modes
   const cycleTheme = () => {
@@ -32,16 +33,9 @@ const SettingsScreen = () => {
     }
   };
 
-  // Show currency picker as an alert dialog
+  // Open modal-based currency picker (Alert.alert only supports 3 buttons on Android)
   const showCurrencyPicker = () => {
-    Alert.alert(
-      'Select Currency',
-      undefined,
-      CURRENCIES.map(c => ({
-        text: `${c.symbol} ${c.name} (${c.code})`,
-        onPress: () => updateSettings({ defaultCurrency: c.code }), // Update default currency
-      }))
-    );
+    setShowCurrencyModal(true);
   };
 
   // Reusable settings row component for consistent layout
@@ -107,7 +101,8 @@ const SettingsScreen = () => {
         <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>DATA</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
           <SettingsRow icon="download" label="Export Reports" onPress={() => navigation.navigate('ExportReport')} />
-          <SettingsRow icon="cloud-upload" label="Cloud Backup" onPress={() => navigation.navigate('CloudBackup')} />
+          {/* Cloud Backup feature commented out for now */}
+          {/* <SettingsRow icon="cloud-upload" label="Cloud Backup" onPress={() => navigation.navigate('CloudBackup')} /> */}
         </View>
 
         {/* Security section */}
@@ -137,6 +132,58 @@ const SettingsScreen = () => {
         {/* Bottom spacer */}
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Currency picker modal with full list of currencies */}
+      <Modal
+        visible={showCurrencyModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCurrencyModal(false)} // Android back button closes modal
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+            {/* Modal header with title and close button */}
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select Currency</Text>
+              <TouchableOpacity onPress={() => setShowCurrencyModal(false)}>
+                <MaterialCommunityIcons name="close" size={24} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            {/* Scrollable list of all available currencies */}
+            <FlatList
+              data={CURRENCIES}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.currencyRow,
+                    {
+                      borderBottomColor: theme.colors.border,
+                      backgroundColor: settings.defaultCurrency === item.code
+                        ? theme.colors.primary + '15' // Highlight selected currency
+                        : 'transparent',
+                    },
+                  ]}
+                  onPress={() => {
+                    updateSettings({ defaultCurrency: item.code }); // Save selected currency
+                    setShowCurrencyModal(false); // Close modal after selection
+                  }}
+                >
+                  <Text style={[styles.currencySymbol, { color: theme.colors.primary }]}>{item.symbol}</Text>
+                  <View style={styles.currencyInfo}>
+                    <Text style={[styles.currencyName, { color: theme.colors.text }]}>{item.name}</Text>
+                    <Text style={[styles.currencyCode, { color: theme.colors.textSecondary }]}>{item.code}</Text>
+                  </View>
+                  {/* Checkmark for currently selected currency */}
+                  {settings.defaultCurrency === item.code && (
+                    <MaterialCommunityIcons name="check-circle" size={22} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -171,6 +218,40 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowLabel: { fontSize: 15, fontWeight: '500' },
   rowValue: { fontSize: 14 },
+  // Currency picker modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent backdrop
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    maxHeight: '70%', // Limit modal height to 70% of screen
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E0E0E0',
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700' },
+  currencyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    gap: 14,
+  },
+  currencySymbol: { fontSize: 20, fontWeight: '700', width: 36, textAlign: 'center' },
+  currencyInfo: { flex: 1 },
+  currencyName: { fontSize: 15, fontWeight: '500' },
+  currencyCode: { fontSize: 12, marginTop: 2 },
 });
 
 export default SettingsScreen;

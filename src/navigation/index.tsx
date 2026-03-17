@@ -4,7 +4,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { RootStackParamList, TabParamList } from '../types';
@@ -24,13 +24,14 @@ import WalletSetupScreen from '../screens/WalletSetupScreen';
 import ExportReportScreen from '../screens/ExportReportScreen';
 import SearchScreen from '../screens/SearchScreen';
 import SecurityScreen from '../screens/SecurityScreen';
-import CloudBackupScreen from '../screens/CloudBackupScreen';
+// Cloud Backup feature commented out for now
+// import CloudBackupScreen from '../screens/CloudBackupScreen';
 import BudgetSetupScreen from '../screens/BudgetSetupScreen';
 import AllExpensesScreen from '../screens/AllExpensesScreen';
 
 // Create typed navigators for type-safe route parameters
 const Tab = createBottomTabNavigator<TabParamList>();
-const Stack = createStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 // Bottom tab navigator with 5 main sections of the app
 const TabNavigator = () => {
@@ -125,17 +126,16 @@ const AppNavigator = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: theme.colors.surface, // Theme-aware header background
-            elevation: 0, // Remove Android shadow
-            shadowOpacity: 0, // Remove iOS shadow
           },
           headerTintColor: theme.colors.text, // Header text and back button color
           headerTitleStyle: {
             fontWeight: '600',
             fontSize: 18,
           },
-          cardStyle: {
+          contentStyle: {
             backgroundColor: theme.colors.background, // Screen background color
           },
+          animation: 'slide_from_right', // Smooth native slide transition
         }}
       >
         {/* Main tab navigator as the home screen */}
@@ -154,8 +154,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search' }} />
         {/* Security settings (PIN/Biometric) */}
         <Stack.Screen name="Security" component={SecurityScreen} options={{ title: 'Security' }} />
-        {/* Cloud backup configuration */}
-        <Stack.Screen name="CloudBackup" component={CloudBackupScreen} options={{ title: 'Cloud Backup' }} />
+        {/* Cloud Backup feature commented out for now */}
+        {/* <Stack.Screen name="CloudBackup" component={CloudBackupScreen} options={{ title: 'Cloud Backup' }} /> */}
         {/* Budget setup and management */}
         <Stack.Screen name="BudgetSetup" component={BudgetSetupScreen} options={{ title: 'Budget Setup' }} />
         {/* All expenses view with full list */}

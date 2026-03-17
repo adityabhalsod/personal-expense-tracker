@@ -1,7 +1,7 @@
 // Add/Edit expense form screen with category selection, amount input, and smart defaults
 // Handles both creating new expenses and editing existing ones
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
@@ -11,7 +11,8 @@ import { useTheme } from '../theme';
 import { useAppStore } from '../store';
 import { PaymentMethod, RecurringFrequency } from '../types';
 import { PAYMENT_METHODS } from '../constants';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Button from '../components/common/Button';
 
 const AddExpenseScreen = () => {
@@ -33,6 +34,31 @@ const AddExpenseScreen = () => {
   const [isRecurring, setIsRecurring] = useState(false); // Recurring toggle
   const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>('monthly'); // Recurrence interval
   const [loading, setLoading] = useState(false); // Submission loading state
+  const [showDatePicker, setShowDatePicker] = useState(false); // Date picker visibility
+
+  // Deduplicate categories by name to prevent duplicate chips
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>();
+    return categories.filter(cat => {
+      if (seen.has(cat.name)) return false; // Skip duplicate names
+      seen.add(cat.name);
+      return true;
+    });
+  }, [categories]);
+
+  // Ref to the scroll view for programmatic scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Scroll the focused input into view above the keyboard
+  const scrollToField = (event: any) => {
+    const { target } = event.nativeEvent;
+    if (scrollViewRef.current && target) {
+      // Delay to allow keyboard to fully appear before measuring
+      setTimeout(() => {
+        scrollViewRef.current?.scrollResponderScrollNativeHandleToKeyboard(target, 150, true);
+      }, 300);
+    }
+  };
 
   // Pre-fill form fields when editing an existing expense
   useEffect(() => {
@@ -108,9 +134,10 @@ const AddExpenseScreen = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // iOS keyboard avoidance
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Keyboard avoidance for both platforms
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // Offset for header height on iOS
     >
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollViewRef} style={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Amount input with large display for easy data entry */}
         <View style={[styles.amountContainer, { backgroundColor: theme.colors.primary }]}>
           <Text style={styles.amountLabel}>Amount</Text>
@@ -128,23 +155,35 @@ const AddExpenseScreen = () => {
           </View>
         </View>
 
-        {/* Date input field */}
+        {/* Date picker field - tap to open native date picker */}
         <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.text }]}>Date</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
-            value={date}
-            onChangeText={setDate}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={theme.colors.textTertiary}
-          />
+          <TouchableOpacity
+            style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.border }]}
+            onPress={() => setShowDatePicker(true)} // Open date picker on tap
+          >
+            <Text style={{ color: theme.colors.text, fontSize: 15 }}>{date}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={parse(date, 'yyyy-MM-dd', new Date())} // Parse current date string
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'} // Native picker style
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(Platform.OS === 'ios'); // Keep open on iOS, close on Android
+                if (selectedDate) {
+                  setDate(format(selectedDate, 'yyyy-MM-dd')); // Format selected date
+                }
+              }}
+            />
+          )}
         </View>
 
         {/* Category selection grid with scrollable chips */}
         <View style={styles.section}>
           <Text style={[styles.label, { color: theme.colors.text }]}>Category</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-            {categories.map((cat) => (
+            {uniqueCategories.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 style={[
@@ -218,6 +257,7 @@ const AddExpenseScreen = () => {
             multiline
             numberOfLines={3}
             textAlignVertical="top" // Align text to top of multiline input
+            onFocus={scrollToField} // Scroll field into view above keyboard
           />
         </View>
 
@@ -230,6 +270,7 @@ const AddExpenseScreen = () => {
             onChangeText={setTags}
             placeholder="e.g., lunch, office, team"
             placeholderTextColor={theme.colors.textTertiary}
+            onFocus={scrollToField} // Scroll field into view above keyboard
           />
           <Text style={[styles.hint, { color: theme.colors.textTertiary }]}>Separate tags with commas</Text>
         </View>
@@ -289,8 +330,8 @@ const AddExpenseScreen = () => {
           />
         </View>
 
-        {/* Bottom spacer */}
-        <View style={{ height: 40 }} />
+        {/* Bottom spacer - extra space so keyboard doesn't cover last fields */}
+        <View style={{ height: 120 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

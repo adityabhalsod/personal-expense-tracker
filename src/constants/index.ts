@@ -21,14 +21,13 @@ export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Other', icon: 'dots-horizontal', color: '#BDC3C7', isDefault: true, order: 15 },
 ];
 
-// Payment method display labels for the UI
+// Payment method display labels for the UI (ordered: Cash, UPI, Debit Card, Bank Transfer, Credit Card, Other)
 export const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] = [
   { value: 'cash', label: 'Cash', icon: 'cash' },
-  { value: 'credit_card', label: 'Credit Card', icon: 'credit-card' },
-  { value: 'debit_card', label: 'Debit Card', icon: 'credit-card-outline' },
   { value: 'upi', label: 'UPI', icon: 'cellphone' },
+  { value: 'debit_card', label: 'Debit Card', icon: 'credit-card-outline' },
   { value: 'bank_transfer', label: 'Bank Transfer', icon: 'bank' },
-  { value: 'wallet', label: 'Digital Wallet', icon: 'wallet' },
+  { value: 'credit_card', label: 'Credit Card', icon: 'credit-card' },
   { value: 'other', label: 'Other', icon: 'dots-horizontal' },
 ];
 

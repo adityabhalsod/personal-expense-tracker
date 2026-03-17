@@ -42,7 +42,8 @@
         {
           "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID to secure your data."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }

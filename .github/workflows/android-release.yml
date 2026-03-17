@@ -1,0 +1,274 @@
+# ============================================================================
+# Android Release Build & Publish — GitHub Actions
+# ============================================================================
+# Triggers on push to main, alpha, and beta branches.
+# Builds a clean release APK via Gradle (no cache), auto-increments the
+# version, creates a GitHub Release with changelog, and uploads the APK
+# as a downloadable asset.
+#
+# Branch → Release channel mapping:
+#   main  → stable release   (v1.0.0, v1.1.0, …)
+#   beta  → beta pre-release (v1.1.0-beta.1, v1.1.0-beta.2, …)
+#   alpha → alpha pre-release (v1.1.0-alpha.1, v1.1.0-alpha.2, …)
+# ============================================================================
+
+name: Android Release
+
+on:
+  push:
+    branches:
+      - main
+      - alpha
+      - beta
+
+# Only one release workflow per branch at a time
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
+# Permissions required to create releases and push tags
+permissions:
+  contents: write
+
+env:
+  JAVA_VERSION: "17"
+  NODE_VERSION: "20"
+
+jobs:
+  build-and-release:
+    name: Build & Release (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history needed for changelog generation
+
+      # ── Determine version & release channel ───────────────────────────
+      - name: Determine version and release channel
+        id: version
+        run: |
+          # Read base version from app.json
+          BASE_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+
+          BRANCH="${GITHUB_REF_NAME}"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+          # Count commits on this branch since the last tag to generate a build number
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            # Number of commits since the last tag
+            BUILD_NUMBER=$(git rev-list "${LAST_TAG}..HEAD" --count)
+          else
+            # No tags yet — count all commits
+            BUILD_NUMBER=$(git rev-list HEAD --count)
+          fi
+          echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+
+          # Construct the full version string based on the branch channel
+          if [ "$BRANCH" = "main" ]; then
+            VERSION="v${BASE_VERSION}"
+            APK_NAME="expense-tracker-v${BASE_VERSION}.apk"
+            PRERELEASE="false"
+            CHANNEL="stable"
+          elif [ "$BRANCH" = "beta" ]; then
+            VERSION="v${BASE_VERSION}-beta.${BUILD_NUMBER}"
+            APK_NAME="expense-tracker-v${BASE_VERSION}-beta.${BUILD_NUMBER}.apk"
+            PRERELEASE="true"
+            CHANNEL="beta"
+          elif [ "$BRANCH" = "alpha" ]; then
+            VERSION="v${BASE_VERSION}-alpha.${BUILD_NUMBER}"
+            APK_NAME="expense-tracker-v${BASE_VERSION}-alpha.${BUILD_NUMBER}.apk"
+            PRERELEASE="true"
+            CHANNEL="alpha"
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+
+          echo "📦 Version: $VERSION | Channel: $CHANNEL | Build: $BUILD_NUMBER"
+
+      # ── Generate changelog from commits ───────────────────────────────
+      - name: Generate changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          # Build a markdown changelog from commit messages since last tag
+          if [ -n "$LAST_TAG" ]; then
+            echo "Generating changelog since $LAST_TAG"
+            RANGE="${LAST_TAG}..HEAD"
+          else
+            echo "No previous tag found — using full commit history"
+            RANGE="HEAD"
+          fi
+
+          # Categorize commits by conventional-commit prefixes
+          {
+            echo "## What's Changed"
+            echo ""
+
+            # Collect feature commits (feat:)
+            FEATURES=$(git log "$RANGE" --pretty=format:"- %s (%h)" --grep="^feat" -i 2>/dev/null || true)
+            if [ -n "$FEATURES" ]; then
+              echo "### ✨ Features"
+              echo "$FEATURES"
+              echo ""
+            fi
+
+            # Collect bug-fix commits (fix:)
+            FIXES=$(git log "$RANGE" --pretty=format:"- %s (%h)" --grep="^fix" -i 2>/dev/null || true)
+            if [ -n "$FIXES" ]; then
+              echo "### 🐛 Bug Fixes"
+              echo "$FIXES"
+              echo ""
+            fi
+
+            # Collect performance commits (perf:)
+            PERF=$(git log "$RANGE" --pretty=format:"- %s (%h)" --grep="^perf" -i 2>/dev/null || true)
+            if [ -n "$PERF" ]; then
+              echo "### ⚡ Performance"
+              echo "$PERF"
+              echo ""
+            fi
+
+            # Collect all other commits not matching the above categories
+            OTHER=$(git log "$RANGE" --pretty=format:"- %s (%h)" --invert-grep --grep="^feat" --grep="^fix" --grep="^perf" -i 2>/dev/null || true)
+            if [ -n "$OTHER" ]; then
+              echo "### 📦 Other Changes"
+              echo "$OTHER"
+              echo ""
+            fi
+
+            echo "---"
+            echo ""
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LAST_TAG:-initial}...${{ steps.version.outputs.version }}"
+          } > changelog.md
+
+          cat changelog.md
+
+          # Store changelog as multiline output
+          {
+            echo "body<<CHANGELOG_EOF"
+            cat changelog.md
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ── Setup Java (needed by Gradle) ─────────────────────────────────
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # ── Setup Node.js & install JS dependencies ───────────────────────
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      # ── Inject version into Android build files ───────────────────────
+      - name: Update Android versionCode and versionName
+        run: |
+          VERSION_NAME="${{ steps.version.outputs.base_version }}"
+          VERSION_CODE="${{ steps.version.outputs.build_number }}"
+
+          # Ensure versionCode is at least 1
+          if [ "$VERSION_CODE" -lt 1 ]; then
+            VERSION_CODE=1
+          fi
+
+          echo "Setting versionName=$VERSION_NAME versionCode=$VERSION_CODE"
+
+          # Patch versionCode in build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" android/app/build.gradle
+          # Patch versionName in build.gradle
+          sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" android/app/build.gradle
+
+      # ── Clean Gradle caches for a fresh build ─────────────────────────
+      - name: Clean Gradle caches
+        working-directory: android
+        run: |
+          # Remove all build artifacts and Gradle build caches
+          rm -rf app/build .gradle/build-cache
+          ./gradlew clean --no-daemon
+
+      # ── Build release APK without cache ───────────────────────────────
+      - name: Build release APK
+        working-directory: android
+        run: |
+          # Assemble release APK — skip lint & tests for CI speed, no build cache
+          ./gradlew app:assembleRelease \
+            -x lint \
+            -x test \
+            --no-build-cache \
+            --no-daemon \
+            --configure-on-demand
+
+      # ── Rename APK to versioned filename ──────────────────────────────
+      - name: Rename APK
+        run: |
+          APK_SRC="android/app/build/outputs/apk/release/app-release.apk"
+          APK_DEST="${{ steps.version.outputs.apk_name }}"
+
+          # Copy APK with the versioned name for the release asset
+          cp "$APK_SRC" "$APK_DEST"
+
+          # Print APK size for the build log
+          APK_SIZE=$(du -h "$APK_DEST" | cut -f1)
+          echo "📦 APK: $APK_DEST ($APK_SIZE)"
+
+      # ── Create Git tag ────────────────────────────────────────────────
+      - name: Create and push tag
+        run: |
+          TAG="${{ steps.version.outputs.version }}"
+
+          # Check if tag already exists — skip if it does
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "⚠️  Tag $TAG already exists, skipping tag creation"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+            echo "✅ Created and pushed tag $TAG"
+          fi
+
+      # ── Create GitHub Release with APK asset ──────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "${{ steps.version.outputs.version }}"
+          body: ${{ steps.changelog.outputs.body }}
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+          draft: false
+          generate_release_notes: false
+          files: |
+            ${{ steps.version.outputs.apk_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Post-release summary ──────────────────────────────────────────
+      - name: Release summary
+        run: |
+          echo "============================================"
+          echo "🚀 Release Published!"
+          echo "============================================"
+          echo "Version  : ${{ steps.version.outputs.version }}"
+          echo "Channel  : ${{ steps.version.outputs.channel }}"
+          echo "APK      : ${{ steps.version.outputs.apk_name }}"
+          echo "Pre-rel  : ${{ steps.version.outputs.prerelease }}"
+          echo "Release  : https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.version }}"
+          echo "============================================"

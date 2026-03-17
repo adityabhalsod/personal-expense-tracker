@@ -14,6 +14,8 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Platform-Android_|_iOS-green" alt="Platform" />
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" />
+  <a href="https://github.com/adityabhalsod/personal-expense-tracker/actions/workflows/android-release.yml"><img src="https://github.com/adityabhalsod/personal-expense-tracker/actions/workflows/android-release.yml/badge.svg" alt="Android Release" /></a>
+  <a href="https://github.com/adityabhalsod/personal-expense-tracker/releases/latest"><img src="https://img.shields.io/github/v/release/adityabhalsod/personal-expense-tracker?include_prereleases&label=Latest%20Release" alt="Latest Release" /></a>
 </p>
 
 ---
@@ -153,6 +155,27 @@ npx expo run:ios --configuration Release
 ```
 
 > **First build note:** The initial release build compiles native C++ modules (reanimated, gesture-handler) and can take **10–15 minutes**. Subsequent builds use the Gradle cache and are much faster.
+
+### CI/CD — Automated Releases
+
+Pushing to specific branches triggers a GitHub Actions pipeline that builds a clean APK and publishes a GitHub Release automatically:
+
+| Branch | Channel | Version Example | Pre-release |
+|--------|---------|-----------------|-------------|
+| `main` | **Stable** | `v1.0.0` | No |
+| `beta` | **Beta** | `v1.0.0-beta.3` | Yes |
+| `alpha` | **Alpha** | `v1.0.0-alpha.7` | Yes |
+
+**What the pipeline does:**
+1. Reads the base version from `app.json` → `expo.version`
+2. Appends `-alpha.N` or `-beta.N` suffix based on the branch (commit count since last tag)
+3. Cleans all Gradle caches and builds a fresh release APK (`--no-build-cache`)
+4. Generates a categorized changelog from commit messages (features, fixes, performance, etc.)
+5. Creates a Git tag, publishes a GitHub Release, and uploads the versioned APK as a downloadable asset
+
+**Download releases:** [GitHub Releases →](https://github.com/adityabhalsod/personal-expense-tracker/releases)
+
+> **Tip:** Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `perf:`) so the changelog is categorized automatically.
 
 ---
 

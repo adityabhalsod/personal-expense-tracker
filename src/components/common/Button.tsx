@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme';
 
 interface ButtonProps {
@@ -92,7 +93,9 @@ const Button: React.FC<ButtonProps> = ({
         <ActivityIndicator color={getTextColor()} size="small" />
       ) : (
         <>
-          {icon && icon}
+          {typeof icon === 'string' ? (
+            <MaterialCommunityIcons name={icon as any} size={getFontSize() + 2} color={getTextColor()} />
+          ) : icon}
           <Text style={[styles.text, { color: getTextColor(), fontSize: getFontSize() }, textStyle]}>
             {title}
           </Text>

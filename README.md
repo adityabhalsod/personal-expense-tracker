@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/React_Native-0.83-61DAFB?logo=react&logoColor=black" alt="React Native" />
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Platform-Android_|_iOS-green" alt="Platform" />
-  <img src="https://img.shields.io/badge/License-Private-lightgrey" alt="License" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" />
 </p>
 
 ---
@@ -231,7 +231,7 @@ Translation files are in `src/i18n/`. To add a new language, create a new transl
 
 ## License
 
-This project is private. All rights reserved.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 

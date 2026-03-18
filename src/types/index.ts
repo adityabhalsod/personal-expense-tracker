@@ -7,7 +7,6 @@ export interface Expense {
   category: string; // Category name (e.g., Food, Transport)
   subcategory?: string; // Optional subcategory for finer classification
   date: string; // ISO date string of when the expense occurred
-  paymentMethod: PaymentMethod; // How the payment was made
   notes?: string; // Optional description or memo
   tags: string[]; // Searchable tags for quick filtering
   currency: string; // Currency code (e.g., USD, INR)
@@ -30,15 +29,23 @@ export interface Category {
   order: number; // Sort order in the category list
 }
 
-// Wallet representing a financial account or fund
+// Supported wallet/payment source types
+export type WalletType = 'cash' | 'bank_account' | 'digital_wallet' | 'credit_card' | 'other';
+
+// Wallet representing a financial account or payment source
 export interface Wallet {
   id: string; // Unique identifier for the wallet
-  name: string; // Display name (e.g., "Main Account")
-  initialBalance: number; // Starting balance set at beginning of period
+  name: string; // Display name (e.g., "HDFC Savings", "Cash")
+  type: WalletType; // Type of payment source (bank, cash, etc.)
+  initialBalance: number; // Starting balance when wallet was created
   currentBalance: number; // Remaining balance after expenses
   currency: string; // Currency code for this wallet
-  month: number; // Month number (1-12) for this wallet period
-  year: number; // Year for this wallet period
+  bankName?: string; // Bank name for bank accounts (e.g., "HDFC Bank")
+  nickname?: string; // Short alias for quick identification
+  iconName: string; // MaterialCommunityIcons icon name for display
+  color: string; // Hex color for visual identification in lists
+  isDefault: boolean; // Whether this is the default wallet for new expenses
+  metadata?: string; // Encrypted JSON blob for any extra non-critical data
   createdAt: string; // Timestamp of wallet creation
   updatedAt: string; // Timestamp of last modification
 }
@@ -52,16 +59,14 @@ export interface Budget {
   month: number; // Month number for monthly budgets
   year: number; // Year for the budget period
   notifyAt: number; // Percentage threshold to trigger notification (e.g., 80)
+  walletId?: string; // Optional wallet/payment source association
 }
-
-// Supported payment methods for expense transactions
-export type PaymentMethod = 'cash' | 'credit_card' | 'debit_card' | 'upi' | 'bank_transfer' | 'wallet' | 'other';
 
 // Frequency options for recurring expenses
 export type RecurringFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly';
 
-// Time periods for budget tracking
-export type BudgetPeriod = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+// Time periods for budget tracking (daily through yearly)
+export type BudgetPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
 // Time range filter options for analytics and reports
 export type TimeRange = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'half_yearly' | 'yearly' | 'custom';
@@ -84,7 +89,6 @@ export interface AppSettings {
   theme: 'light' | 'dark' | 'system'; // Appearance mode preference
   language: 'en' | 'gu' | 'hi'; // Display language preference
   defaultCurrency: string; // Default currency code for new expenses
-  defaultPaymentMethod: PaymentMethod; // Default payment method
   enableBiometric: boolean; // Whether biometric lock is enabled
   enablePin: boolean; // Whether PIN lock is enabled
   pinHash?: string; // Hashed PIN for verification
@@ -135,6 +139,7 @@ export type RootStackParamList = {
   CloudBackup: undefined; // Cloud backup settings
   BudgetSetup: undefined; // Budget configuration
   AllExpenses: undefined; // Full expense list view
+  QuickAdd: { type: 'expense' | 'income' }; // Widget quick-add modal (expense or income)
 };
 
 // Bottom tab navigator parameter types
@@ -145,3 +150,6 @@ export type TabParamList = {
   Wallet: undefined; // Wallet management tab
   Settings: undefined; // App settings tab
 };
+
+
+

@@ -18,6 +18,23 @@ export const formatCurrency = (amount: number, currencyCode: string = 'INR'): st
   return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
+// Format a raw numeric string with Indian-style commas for input field display
+// Preserves partial input (e.g., "28000." stays as "28,000." without adding trailing zeros)
+export const formatAmountInput = (value: string): string => {
+  if (!value) return ''; // Return empty for empty input
+  const parts = value.split('.');
+  let intPart = parts[0];
+  const decPart = parts.length > 1 ? '.' + parts[1] : ''; // Keep decimal as typed
+  // Apply Indian grouping: last 3 digits, then groups of 2
+  if (intPart.length > 3) {
+    const last3 = intPart.slice(-3); // Last three digits stay ungrouped
+    const remaining = intPart.slice(0, -3); // Remaining digits grouped in pairs
+    const groups = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    intPart = `${groups},${last3}`;
+  }
+  return intPart + decPart; // Combine integer and decimal parts
+};
+
 // Format number using Indian numbering system (lakhs, crores)
 const formatIndianNumber = (num: number): string => {
   const isNegative = num < 0; // Track sign separately
@@ -125,20 +142,6 @@ export const calculatePercentage = (value: number, total: number): number => {
 export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...'; // Add ellipsis for overflow
-};
-
-// Convert a payment method key to a display-friendly label
-export const getPaymentMethodLabel = (method: string): string => {
-  const labels: Record<string, string> = {
-    cash: 'Cash',
-    credit_card: 'Credit Card',
-    debit_card: 'Debit Card',
-    upi: 'UPI',
-    bank_transfer: 'Bank Transfer',
-    wallet: 'Digital Wallet',
-    other: 'Other',
-  };
-  return labels[method] || method; // Return the label or original value if not found
 };
 
 // Get the currency symbol for a given currency code

@@ -1,15 +1,16 @@
 // Home dashboard screen showing wallet summary, recent expenses, and quick actions
-// Serves as the main entry point after app launch
+// Serves as the main entry point after app launch with modern shortcut widgets
+// Supports multi-select mode for batch-deleting recent expenses
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
-import { useAppStore } from '../store';
+import { useAppStore, selectExpenses, selectCurrentWallet, selectWallets, selectCategories, selectIsLoading } from '../store';
 import Card from '../components/common/Card';
 import { formatCurrency, formatRelativeDate } from '../utils/helpers';
 import { useLanguage } from '../i18n';
@@ -19,14 +20,63 @@ const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const { t } = useLanguage();
 
-  // Subscribe to relevant store slices for reactive updates
-  const { expenses, currentWallet, categories, isLoading, initialize, loadExpenses, loadCurrentWallet } = useAppStore();
+  // Subscribe to individual store slices via selectors to prevent full-store re-renders
+  const expenses = useAppStore(selectExpenses);
+  const currentWallet = useAppStore(selectCurrentWallet);
+  const wallets = useAppStore(selectWallets);
+  const categories = useAppStore(selectCategories);
+  const isLoading = useAppStore(selectIsLoading);
+  const initialize = useAppStore((s) => s.initialize);
+  const loadExpenses = useAppStore((s) => s.loadExpenses);
+  const loadCurrentWallet = useAppStore((s) => s.loadCurrentWallet);
+  const loadWallets = useAppStore((s) => s.loadWallets);
+  const deleteMultipleExpenses = useAppStore((s) => s.deleteMultipleExpenses);
+
+  // Multi-select state for batch deleting recent expenses
+  const [isSelectMode, setIsSelectMode] = useState(false); // Whether multi-select is active
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set()); // Selected expense IDs
+
+  // Toggle an expense in the selection set
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); // Deselect if already selected
+      else next.add(id); // Add to selection
+      return next;
+    });
+  }, []);
+
+  // Exit multi-select mode and clear selections
+  const exitSelectMode = useCallback(() => {
+    setIsSelectMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  // Confirm and batch-delete selected expenses
+  const handleBatchDelete = useCallback(() => {
+    if (selectedIds.size === 0) return;
+    Alert.alert(
+      'Delete Expenses',
+      `Delete ${selectedIds.size} selected expense${selectedIds.size === 1 ? '' : 's'}? Amounts will be restored to wallets.`,
+      [
+        { text: t.common.cancel, style: 'cancel' },
+        {
+          text: t.common.delete, style: 'destructive',
+          onPress: async () => {
+            await deleteMultipleExpenses([...selectedIds]);
+            exitSelectMode(); // Clear selection after deletion
+          },
+        },
+      ],
+    );
+  }, [selectedIds, deleteMultipleExpenses, exitSelectMode, t]);
 
   // Refresh data whenever this screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadExpenses(50);
       loadCurrentWallet();
+      loadWallets();
     }, [])
   );
 
@@ -40,6 +90,21 @@ const HomeScreen = () => {
 
   // Get the 5 most recent expenses for the dashboard preview (memoized)
   const recentExpenses = useMemo(() => expenses.slice(0, 5), [expenses]);
+
+  // Aggregate total balance across all wallets
+  const totalBalance = useMemo(
+    () => wallets.reduce((sum, w) => sum + w.currentBalance, 0),
+    [wallets]
+  );
+
+  // Aggregate total initial balance across all wallets
+  const totalInitial = useMemo(
+    () => wallets.reduce((sum, w) => sum + w.initialBalance, 0),
+    [wallets]
+  );
+
+  // Calculate total spent across all wallets
+  const totalSpent = useMemo(() => totalInitial - totalBalance, [totalInitial, totalBalance]);
 
   // Calculate today's total spending from expenses (memoized)
   const todayStr = new Date().toISOString().split('T')[0];
@@ -83,32 +148,38 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Wallet balance summary card */}
+        {/* Multi-wallet aggregate balance card */}
         <View style={styles.walletCard}>
           <View style={[styles.walletGradient, { backgroundColor: theme.colors.primary }]}>
-            {currentWallet ? (
+            {wallets.length > 0 ? (
               <>
-                {/* Starting balance display */}
+                {/* Aggregate starting balance */}
                 <View style={styles.walletRow}>
                   <Text style={styles.walletLabel}>{t.home.startingBalance}</Text>
-                  <Text style={styles.walletAmount}>
-                    {formatCurrency(currentWallet.initialBalance, currentWallet.currency)}
-                  </Text>
+                  <Text style={styles.walletAmount}>{formatCurrency(totalInitial)}</Text>
                 </View>
-                {/* Current remaining balance (large emphasis) */}
+                {/* Total remaining balance across all wallets (large emphasis) */}
                 <View style={styles.walletMainBalance}>
                   <Text style={styles.walletBalanceLabel}>{t.home.remainingBalance}</Text>
-                  <Text style={styles.walletBalance}>
-                    {formatCurrency(currentWallet.currentBalance, currentWallet.currency)}
-                  </Text>
+                  <Text style={styles.walletBalance}>{formatCurrency(totalBalance)}</Text>
                 </View>
-                {/* Total spent this month */}
+                {/* Aggregate total spent */}
                 <View style={styles.walletRow}>
                   <Text style={styles.walletLabel}>{t.home.totalSpent}</Text>
-                  <Text style={styles.walletSpent}>
-                    {formatCurrency(currentWallet.initialBalance - currentWallet.currentBalance, currentWallet.currency)}
-                  </Text>
+                  <Text style={styles.walletSpent}>{formatCurrency(totalSpent)}</Text>
                 </View>
+                {/* Mini wallet previews showing individual wallet balances */}
+                {wallets.length > 1 && (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.miniWallets}>
+                    {wallets.map((w) => (
+                      <View key={w.id} style={[styles.miniWallet, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                        <MaterialCommunityIcons name={w.iconName as any} size={16} color="#FFF" />
+                        <Text style={styles.miniWalletName} numberOfLines={1}>{w.nickname || w.name}</Text>
+                        <Text style={styles.miniWalletBal}>{formatCurrency(w.currentBalance, w.currency)}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )}
               </>
             ) : (
               // Prompt user to set up their wallet if none exists
@@ -121,19 +192,41 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* Quick action buttons grid */}
-        <View style={styles.quickActions}>
-          {/* Add Expense button */}
+        {/* Shortcut widgets — quick actions with modern icon cards */}
+        <View style={styles.widgetRow}>
+          {/* Quick Add Expense shortcut widget */}
           <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+            style={[styles.widget, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('AddExpense', {})}
           >
-            <View style={[styles.quickActionIcon, { backgroundColor: '#EEF2FF' }]}>
-              <MaterialCommunityIcons name="plus" size={24} color={theme.colors.primary} />
+            <View style={[styles.widgetIcon, { backgroundColor: '#FEE2E2' }]}>
+              <MaterialCommunityIcons name="arrow-up-circle" size={32} color="#EF4444" />
             </View>
-            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.addExpense}</Text>
+            <Text style={[styles.widgetTitle, { color: theme.colors.text }]}>{t.home.addExpense}</Text>
+            <Text style={[styles.widgetSubtitle, { color: theme.colors.textTertiary }]}>
+              {'Quick entry'}
+            </Text>
           </TouchableOpacity>
 
+          {/* Quick Payment Received shortcut widget */}
+          <TouchableOpacity
+            style={[styles.widget, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+            onPress={() => navigation.navigate('WalletSetup')}
+          >
+            <View style={[styles.widgetIcon, { backgroundColor: '#DCFCE7' }]}>
+              <MaterialCommunityIcons name="arrow-down-circle" size={32} color="#22C55E" />
+            </View>
+            <Text style={[styles.widgetTitle, { color: theme.colors.text }]}>
+              {'Add Income'}
+            </Text>
+            <Text style={[styles.widgetSubtitle, { color: theme.colors.textTertiary }]}>
+              {'Top up wallet'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Quick action buttons grid */}
+        <View style={styles.quickActions}>
           {/* Analytics button */}
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
@@ -166,6 +259,17 @@ const HomeScreen = () => {
             </View>
             <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.home.budgets}</Text>
           </TouchableOpacity>
+
+          {/* Wallets button */}
+          <TouchableOpacity
+            style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Wallet' })}
+          >
+            <View style={[styles.quickActionIcon, { backgroundColor: '#EEF2FF' }]}>
+              <MaterialCommunityIcons name="wallet" size={24} color={theme.colors.primary} />
+            </View>
+            <Text style={[styles.quickActionText, { color: theme.colors.text }]}>{t.tabs.wallet}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Today's spending summary card */}
@@ -182,23 +286,62 @@ const HomeScreen = () => {
         {/* Recent expenses list section */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t.home.recentExpenses}</Text>
-          {/* View All link navigates to full expense list */}
-          <TouchableOpacity onPress={() => navigation.navigate('AllExpenses')}>
-            <Text style={[styles.viewAll, { color: theme.colors.primary }]}>{t.home.viewAll}</Text>
-          </TouchableOpacity>
+          {/* Show delete controls in select mode, otherwise show View All */}
+          {isSelectMode ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 13 }}>
+                {selectedIds.size} selected
+              </Text>
+              <TouchableOpacity onPress={handleBatchDelete}>
+                <MaterialCommunityIcons name="delete" size={22} color={theme.colors.expense} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={exitSelectMode}>
+                <MaterialCommunityIcons name="close" size={22} color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => navigation.navigate('AllExpenses')}>
+              <Text style={[styles.viewAll, { color: theme.colors.primary }]}>{t.home.viewAll}</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {recentExpenses.length > 0 ? (
-          // Render each recent expense as a touchable card row
+          // Render each recent expense as a touchable card row with multi-select support
           recentExpenses.map((expense) => {
             const catInfo = getCategoryInfo(expense.category);
+            const isSelected = selectedIds.has(expense.id); // Check if this expense is selected
             return (
               <TouchableOpacity
                 key={expense.id}
-                onPress={() => navigation.navigate('ExpenseDetail', { expenseId: expense.id })}
+                onPress={() => {
+                  if (isSelectMode) {
+                    toggleSelection(expense.id); // Toggle selection in multi-select mode
+                  } else {
+                    navigation.navigate('ExpenseDetail', { expenseId: expense.id });
+                  }
+                }}
+                onLongPress={() => {
+                  if (!isSelectMode) {
+                    setIsSelectMode(true); // Enter select mode on long press
+                    setSelectedIds(new Set([expense.id])); // Pre-select the long-pressed item
+                  }
+                }}
               >
-                <Card style={styles.expenseCard}>
+                <Card style={[
+                  styles.expenseCard,
+                  isSelected && { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary, borderWidth: 1 },
+                ]}>
                   <View style={styles.expenseRow}>
+                    {/* Checkbox shown only in multi-select mode */}
+                    {isSelectMode && (
+                      <MaterialCommunityIcons
+                        name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                        size={22}
+                        color={isSelected ? theme.colors.primary : theme.colors.textSecondary}
+                        style={{ marginRight: 8 }}
+                      />
+                    )}
                     {/* Category icon circle */}
                     <View style={[styles.expenseIcon, { backgroundColor: catInfo.color + '20' }]}>
                       <MaterialCommunityIcons name={catInfo.icon as any} size={24} color={catInfo.color} />
@@ -284,6 +427,40 @@ const styles = StyleSheet.create({
   walletSetup: { alignItems: 'center', paddingVertical: 20 },
   walletSetupText: { color: '#FFFFFF', fontSize: 18, fontWeight: '600', marginTop: 12 },
   walletSetupSubtext: { color: 'rgba(255,255,255,0.7)', fontSize: 14, marginTop: 4 },
+  // Mini wallet previews inside the main card
+  miniWallets: { marginTop: 12, flexDirection: 'row' },
+  miniWallet: {
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12,
+    marginRight: 8, alignItems: 'center', minWidth: 80,
+  },
+  miniWalletName: { color: 'rgba(255,255,255,0.8)', fontSize: 10, marginTop: 2 },
+  miniWalletBal: { color: '#FFF', fontSize: 12, fontWeight: '700', marginTop: 2 },
+  // Shortcut widgets
+  widgetRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 12,
+  },
+  widget: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    alignItems: 'center',
+    gap: 6,
+  },
+  widgetIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  widgetTitle: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  widgetSubtitle: { fontSize: 11, textAlign: 'center' },
+  // Quick action buttons
   quickActions: {
     flexDirection: 'row', // Horizontal grid of action buttons
     flexWrap: 'wrap',

@@ -5,6 +5,7 @@ import * as SQLite from 'expo-sqlite';
 import { Expense, Category, Wallet, Budget } from '../types';
 import { DEFAULT_CATEGORIES } from '../constants';
 import * as Crypto from 'expo-crypto';
+import { encryptData, decryptData } from '../utils/encryption';
 
 // Singleton database instance shared across the app
 let db: SQLite.SQLiteDatabase | null = null;
@@ -76,16 +77,21 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
     );
   `);
 
-  // Create wallets table for monthly balance tracking
+  // Create wallets table for multi-wallet payment source tracking
   await database.execAsync(`
     CREATE TABLE IF NOT EXISTS wallets (
       id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'cash',
       initialBalance REAL NOT NULL DEFAULT 0,
       currentBalance REAL NOT NULL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'INR',
-      month INTEGER NOT NULL,
-      year INTEGER NOT NULL,
+      bankName TEXT,
+      nickname TEXT,
+      iconName TEXT NOT NULL DEFAULT 'wallet',
+      color TEXT NOT NULL DEFAULT '#4ECDC4',
+      isDefault INTEGER NOT NULL DEFAULT 0,
+      metadata TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
@@ -105,12 +111,98 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
     );
   `);
 
+
+  // --- Migrations: add new wallet columns for existing databases upgrading from v1 ---
+  // These must run BEFORE index creation since indexes reference these new columns
+  const walletMigrationColumns = [
+    { name: 'type', sql: "ALTER TABLE wallets ADD COLUMN type TEXT NOT NULL DEFAULT 'cash'" },
+    { name: 'bankName', sql: 'ALTER TABLE wallets ADD COLUMN bankName TEXT' },
+    { name: 'nickname', sql: 'ALTER TABLE wallets ADD COLUMN nickname TEXT' },
+    { name: 'iconName', sql: "ALTER TABLE wallets ADD COLUMN iconName TEXT NOT NULL DEFAULT 'wallet'" },
+    { name: 'color', sql: "ALTER TABLE wallets ADD COLUMN color TEXT NOT NULL DEFAULT '#4ECDC4'" },
+    { name: 'isDefault', sql: 'ALTER TABLE wallets ADD COLUMN isDefault INTEGER NOT NULL DEFAULT 0' },
+    { name: 'metadata', sql: 'ALTER TABLE wallets ADD COLUMN metadata TEXT' },
+  ];
+  for (const col of walletMigrationColumns) {
+    try {
+      await database.execAsync(col.sql);
+    } catch {
+      // Column already exists — ignore the duplicate column error
+    }
+  }
+
+  // Migration: drop legacy NOT NULL month/year columns by recreating wallets table
+  // SQLite cannot ALTER columns, so we copy data to temp, recreate, and copy back
+  try {
+    const colCheck = await database.getAllAsync<{ name: string }>(
+      "PRAGMA table_info(wallets)"
+    );
+    const hasMonth = colCheck.some(c => c.name === 'month');
+    if (hasMonth) {
+      // Old schema has month/year — need to recreate table without them
+      await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS wallets_v2 (
+          id TEXT PRIMARY KEY NOT NULL,
+          name TEXT NOT NULL,
+          type TEXT NOT NULL DEFAULT 'cash',
+          initialBalance REAL NOT NULL DEFAULT 0,
+          currentBalance REAL NOT NULL DEFAULT 0,
+          currency TEXT NOT NULL DEFAULT 'INR',
+          bankName TEXT,
+          nickname TEXT,
+          iconName TEXT NOT NULL DEFAULT 'wallet',
+          color TEXT NOT NULL DEFAULT '#4ECDC4',
+          isDefault INTEGER NOT NULL DEFAULT 0,
+          metadata TEXT,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL
+        );
+      `);
+      // Copy existing wallet rows, mapping old columns to new schema
+      await database.execAsync(`
+        INSERT OR IGNORE INTO wallets_v2 (id, name, type, initialBalance, currentBalance, currency, bankName, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
+        SELECT id, name,
+          COALESCE(type, 'cash'),
+          COALESCE(initialBalance, 0),
+          COALESCE(currentBalance, 0),
+          COALESCE(currency, 'INR'),
+          bankName, nickname,
+          COALESCE(iconName, 'wallet'),
+          COALESCE(color, '#4ECDC4'),
+          COALESCE(isDefault, 0),
+          metadata, createdAt, updatedAt
+        FROM wallets;
+      `);
+      // Swap tables: drop old, rename new
+      await database.execAsync('DROP TABLE wallets;');
+      await database.execAsync('ALTER TABLE wallets_v2 RENAME TO wallets;');
+    }
+  } catch (e) {
+    console.warn('Wallet table migration (month/year removal) skipped:', e);
+  }
+
+  // Migration: add walletId column to expenses for wallet FK
+  try {
+    await database.execAsync('ALTER TABLE expenses ADD COLUMN walletId TEXT');
+  } catch {
+    // Column already exists — ignore
+  }
+
+  // Migration: add walletId column to budgets for wallet-specific budget tracking
+  try {
+    await database.execAsync('ALTER TABLE budgets ADD COLUMN walletId TEXT');
+  } catch {
+    // Column already exists — ignore
+  }
+
   // Create indexes for common query patterns to optimize performance
+  // Safe to run now because all columns (including migrated ones) exist
   await database.execAsync(`
     CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
     CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
     CREATE INDEX IF NOT EXISTS idx_expenses_wallet ON expenses(walletId);
-    CREATE INDEX IF NOT EXISTS idx_wallets_month_year ON wallets(month, year);
+    CREATE INDEX IF NOT EXISTS idx_wallets_type ON wallets(type);
+    CREATE INDEX IF NOT EXISTS idx_wallets_default ON wallets(isDefault);
   `);
 
   // Seed default categories if the categories table is empty
@@ -159,6 +251,7 @@ export const updateCategory = async (id: string, category: Partial<Category>): P
   if (category.name !== undefined) { fields.push('name = ?'); values.push(category.name); }
   if (category.icon !== undefined) { fields.push('icon = ?'); values.push(category.icon); }
   if (category.color !== undefined) { fields.push('color = ?'); values.push(category.color); }
+  if (category.isDefault !== undefined) { fields.push('isDefault = ?'); values.push(category.isDefault ? 1 : 0); }
   if (category.budget !== undefined) { fields.push('budget = ?'); values.push(category.budget); }
   if (category.order !== undefined) { fields.push('"order" = ?'); values.push(category.order); }
 
@@ -171,6 +264,24 @@ export const updateCategory = async (id: string, category: Partial<Category>): P
 export const deleteCategory = async (id: string): Promise<void> => {
   const database = await getDatabase();
   await database.runAsync('DELETE FROM categories WHERE id = ?', [id]);
+};
+
+// Set a category as the default and clear previous default flags
+export const setDefaultCategory = async (id: string): Promise<void> => {
+  const database = await getDatabase();
+  // Clear isDefault from all categories first
+  await database.runAsync('UPDATE categories SET isDefault = 0 WHERE isDefault = 1');
+  // Set the new default category
+  await database.runAsync('UPDATE categories SET isDefault = 1 WHERE id = ?', [id]);
+};
+
+// Delete multiple categories by their IDs in a single batch
+export const deleteMultipleCategories = async (ids: string[]): Promise<void> => {
+  if (ids.length === 0) return;
+  const database = await getDatabase();
+  // Build parameterized placeholders for IN clause
+  const placeholders = ids.map(() => '?').join(',');
+  await database.runAsync(`DELETE FROM categories WHERE id IN (${placeholders})`, ids);
 };
 
 // ==================== EXPENSE OPERATIONS ====================
@@ -233,11 +344,11 @@ export const addExpense = async (expense: Omit<Expense, 'id' | 'createdAt' | 'up
   const now = new Date().toISOString(); // Current timestamp for audit fields
 
   await database.runAsync(
-    `INSERT INTO expenses (id, amount, category, subcategory, date, paymentMethod, notes, tags, currency, isRecurring, recurringFrequency, recurringEndDate, createdAt, updatedAt, walletId)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO expenses (id, amount, category, subcategory, date, notes, tags, currency, isRecurring, recurringFrequency, recurringEndDate, createdAt, updatedAt, walletId)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id, expense.amount, expense.category, expense.subcategory || null,
-      expense.date, expense.paymentMethod, expense.notes || null,
+      expense.date, expense.notes || null,
       JSON.stringify(expense.tags), expense.currency, expense.isRecurring ? 1 : 0,
       expense.recurringFrequency || null, expense.recurringEndDate || null,
       now, now, expense.walletId || null,
@@ -272,7 +383,6 @@ export const updateExpense = async (id: string, updates: Partial<Expense>): Prom
   if (updates.category !== undefined) { fields.push('category = ?'); values.push(updates.category); }
   if (updates.subcategory !== undefined) { fields.push('subcategory = ?'); values.push(updates.subcategory); }
   if (updates.date !== undefined) { fields.push('date = ?'); values.push(updates.date); }
-  if (updates.paymentMethod !== undefined) { fields.push('paymentMethod = ?'); values.push(updates.paymentMethod); }
   if (updates.notes !== undefined) { fields.push('notes = ?'); values.push(updates.notes); }
   if (updates.tags !== undefined) { fields.push('tags = ?'); values.push(JSON.stringify(updates.tags)); }
   if (updates.isRecurring !== undefined) { fields.push('isRecurring = ?'); values.push(updates.isRecurring ? 1 : 0); }
@@ -310,6 +420,32 @@ export const deleteExpense = async (id: string): Promise<void> => {
   }
 };
 
+// Delete multiple expenses by IDs and restore each amount to its wallet
+export const deleteMultipleExpenses = async (ids: string[]): Promise<void> => {
+  if (ids.length === 0) return;
+  const database = await getDatabase();
+  const now = new Date().toISOString();
+  const placeholders = ids.map(() => '?').join(',');
+
+  // Fetch all targeted expenses to restore wallet balances
+  const rows = await database.getAllAsync<any>(
+    `SELECT id, amount, walletId FROM expenses WHERE id IN (${placeholders})`, ids
+  );
+
+  // Delete all matching expenses in one query
+  await database.runAsync(`DELETE FROM expenses WHERE id IN (${placeholders})`, ids);
+
+  // Restore each expense amount back to its respective wallet
+  for (const row of rows) {
+    if (row.walletId) {
+      await database.runAsync(
+        'UPDATE wallets SET currentBalance = currentBalance + ?, updatedAt = ? WHERE id = ?',
+        [row.amount, now, row.walletId]
+      );
+    }
+  }
+};
+
 // Get a single expense by its ID
 export const getExpenseById = async (id: string): Promise<Expense | null> => {
   const database = await getDatabase();
@@ -326,49 +462,97 @@ export const getExpenseCount = async (): Promise<number> => {
 
 // ==================== WALLET OPERATIONS ====================
 
-// Get the wallet for a specific month and year
-export const getWalletByMonth = async (month: number, year: number): Promise<Wallet | null> => {
+// Get the default wallet (marked as default, or first wallet as fallback)
+export const getDefaultWallet = async (): Promise<Wallet | null> => {
   const database = await getDatabase();
-  const row = await database.getFirstAsync<any>(
-    'SELECT * FROM wallets WHERE month = ? AND year = ?',
-    [month, year]
+  // Try to find the wallet marked as default first
+  let row = await database.getFirstAsync<any>(
+    'SELECT * FROM wallets WHERE isDefault = 1 LIMIT 1'
   );
-  return row || null;
+  // Fall back to the first created wallet if no default is set
+  if (!row) {
+    row = await database.getFirstAsync<any>(
+      'SELECT * FROM wallets ORDER BY createdAt ASC LIMIT 1'
+    );
+  }
+  return row ? await parseWalletRow(row) : null;
 };
 
-// Get all wallets ordered by most recent first
+// Get all wallets ordered by default first, then by name
 export const getAllWallets = async (): Promise<Wallet[]> => {
   const database = await getDatabase();
-  return database.getAllAsync<Wallet>('SELECT * FROM wallets ORDER BY year DESC, month DESC');
+  const rows = await database.getAllAsync<any>(
+    'SELECT * FROM wallets ORDER BY isDefault DESC, name ASC'
+  );
+  // Decrypt sensitive fields for each wallet before returning
+  const wallets: Wallet[] = [];
+  for (const row of rows) {
+    wallets.push(await parseWalletRow(row));
+  }
+  return wallets;
 };
 
-// Create a new wallet for a specific month/year period
+// Create a new wallet/payment source with encrypted sensitive fields
 export const addWallet = async (wallet: Omit<Wallet, 'id' | 'createdAt' | 'updatedAt'>): Promise<Wallet> => {
   const database = await getDatabase();
   const id = generateId();
   const now = new Date().toISOString();
 
+  // Encrypt sensitive fields before storing
+  const encryptedMetadata = wallet.metadata ? await encryptData(wallet.metadata) : null;
+
   await database.runAsync(
-    'INSERT INTO wallets (id, name, initialBalance, currentBalance, currency, month, year, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, wallet.name, wallet.initialBalance, wallet.currentBalance, wallet.currency, wallet.month, wallet.year, now, now]
+    `INSERT INTO wallets (id, name, type, initialBalance, currentBalance, currency, bankName, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id, wallet.name, wallet.type, wallet.initialBalance, wallet.currentBalance,
+      wallet.currency, wallet.bankName || null,
+      wallet.nickname || null, wallet.iconName, wallet.color,
+      wallet.isDefault ? 1 : 0, encryptedMetadata, now, now,
+    ]
   );
 
   return { id, ...wallet, createdAt: now, updatedAt: now };
 };
 
-// Update wallet details (e.g., changing the initial balance)
+// Update wallet details with re-encrypted sensitive fields
 export const updateWallet = async (id: string, updates: Partial<Wallet>): Promise<void> => {
   const database = await getDatabase();
   const now = new Date().toISOString();
   const fields: string[] = ['updatedAt = ?'];
   const values: any[] = [now];
 
+  // Build dynamic SET clause from provided fields
   if (updates.name !== undefined) { fields.push('name = ?'); values.push(updates.name); }
+  if (updates.type !== undefined) { fields.push('type = ?'); values.push(updates.type); }
   if (updates.initialBalance !== undefined) { fields.push('initialBalance = ?'); values.push(updates.initialBalance); }
   if (updates.currentBalance !== undefined) { fields.push('currentBalance = ?'); values.push(updates.currentBalance); }
+  if (updates.bankName !== undefined) { fields.push('bankName = ?'); values.push(updates.bankName); }
+  if (updates.nickname !== undefined) { fields.push('nickname = ?'); values.push(updates.nickname); }
+  if (updates.iconName !== undefined) { fields.push('iconName = ?'); values.push(updates.iconName); }
+  if (updates.color !== undefined) { fields.push('color = ?'); values.push(updates.color); }
+  if (updates.isDefault !== undefined) { fields.push('isDefault = ?'); values.push(updates.isDefault ? 1 : 0); }
+
+  // Re-encrypt sensitive fields if they are being updated
+  if (updates.metadata !== undefined) {
+    fields.push('metadata = ?');
+    values.push(updates.metadata ? await encryptData(updates.metadata) : null);
+  }
 
   values.push(id);
   await database.runAsync(`UPDATE wallets SET ${fields.join(', ')} WHERE id = ?`, values);
+};
+
+// Delete a wallet by ID
+export const deleteWallet = async (id: string): Promise<void> => {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM wallets WHERE id = ?', [id]);
+};
+
+// Clear the default flag from all wallets (used before setting a new default)
+export const clearDefaultWallet = async (): Promise<void> => {
+  const database = await getDatabase();
+  await database.runAsync('UPDATE wallets SET isDefault = 0 WHERE isDefault = 1');
 };
 
 // ==================== BUDGET OPERATIONS ====================
@@ -382,18 +566,18 @@ export const getBudgetsByMonth = async (month: number, year: number): Promise<Bu
   );
 };
 
-// Create a new budget rule
+// Create a new budget rule with optional wallet association
 export const addBudget = async (budget: Omit<Budget, 'id'>): Promise<Budget> => {
   const database = await getDatabase();
   const id = generateId();
   await database.runAsync(
-    'INSERT INTO budgets (id, categoryId, amount, period, month, year, notifyAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, budget.categoryId || null, budget.amount, budget.period, budget.month, budget.year, budget.notifyAt]
+    'INSERT INTO budgets (id, categoryId, amount, period, month, year, notifyAt, walletId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, budget.categoryId || null, budget.amount, budget.period, budget.month, budget.year, budget.notifyAt, budget.walletId || null]
   );
   return { id, ...budget };
 };
 
-// Update an existing budget rule
+// Update an existing budget rule including period and wallet
 export const updateBudget = async (id: string, updates: Partial<Budget>): Promise<void> => {
   const database = await getDatabase();
   const fields: string[] = [];
@@ -402,6 +586,8 @@ export const updateBudget = async (id: string, updates: Partial<Budget>): Promis
   if (updates.amount !== undefined) { fields.push('amount = ?'); values.push(updates.amount); }
   if (updates.notifyAt !== undefined) { fields.push('notifyAt = ?'); values.push(updates.notifyAt); }
   if (updates.categoryId !== undefined) { fields.push('categoryId = ?'); values.push(updates.categoryId); }
+  if (updates.period !== undefined) { fields.push('period = ?'); values.push(updates.period); }
+  if (updates.walletId !== undefined) { fields.push('walletId = ?'); values.push(updates.walletId || null); }
 
   if (fields.length === 0) return;
   values.push(id);
@@ -466,12 +652,52 @@ export const exportAllData = async (): Promise<{ expenses: Expense[]; categories
   const database = await getDatabase();
   const expenses = (await database.getAllAsync<any>('SELECT * FROM expenses ORDER BY date DESC')).map(parseExpenseRow);
   const categories = await database.getAllAsync<any>('SELECT * FROM categories ORDER BY "order" ASC');
-  const wallets = await database.getAllAsync<Wallet>('SELECT * FROM wallets ORDER BY year DESC, month DESC');
+  const walletRows = await database.getAllAsync<any>('SELECT * FROM wallets ORDER BY isDefault DESC, name ASC');
+  const wallets: Wallet[] = [];
+  for (const row of walletRows) {
+    wallets.push(await parseWalletRow(row));
+  }
   const budgets = await database.getAllAsync<Budget>('SELECT * FROM budgets');
   return { expenses, categories: categories.map((c: any) => ({ ...c, isDefault: c.isDefault === 1 })), wallets, budgets };
 };
 
+// ==================== DATABASE RESET FUNCTIONS ====================
+
+// Clear all row data from transactional tables but preserve table structure and categories
+// Useful for "start fresh" without losing categories or app structure
+export const clearAllData = async (): Promise<void> => {
+  const database = await getDatabase();
+  // Delete all rows from data tables in dependency order (children first)
+  await database.execAsync(`
+    DELETE FROM expenses;
+    DELETE FROM budgets;
+    DELETE FROM wallets;
+  `);
+};
+
+// Drop all tables and reinitialize the database from scratch
+// This is a full factory reset — all data including categories is lost
+export const resetDatabase = async (): Promise<void> => {
+  const database = await getDatabase();
+  // Drop every table in reverse-dependency order
+  await database.execAsync(`
+    DROP TABLE IF EXISTS expenses;
+    DROP TABLE IF EXISTS budgets;
+    DROP TABLE IF EXISTS wallets;
+    DROP TABLE IF EXISTS categories;
+  `);
+  // Recreate all tables and re-seed default categories
+  await initializeDatabase(database);
+};
+
 // ==================== HELPER FUNCTIONS ====================
+
+// Convert a raw database row to a typed Wallet object with decrypted fields
+const parseWalletRow = async (row: any): Promise<Wallet> => ({
+  ...row,
+  isDefault: row.isDefault === 1,
+  metadata: row.metadata ? await decryptData(row.metadata) : undefined,
+});
 
 // Convert a raw database row to a typed Expense object
 const parseExpenseRow = (row: any): Expense => ({

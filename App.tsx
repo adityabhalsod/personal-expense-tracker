@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useLanguage } from './src/i18n';
 import AppNavigator from './src/navigation';
-import { useAppStore } from './src/store';
+import { useAppStore, selectIsInitialized, selectSettings } from './src/store';
 import { processRecurringExpenses } from './src/services/recurringExpenses';
 import { requestNotificationPermissions, checkBudgetNotifications } from './src/services/notifications';
 import PinLockScreen from './src/components/PinLockScreen';
@@ -30,8 +30,14 @@ const LoadingScreen = () => {
 // Inner app component that handles store initialization and security gate
 const AppContent = () => {
   const { theme, isDark } = useTheme();
-  const { isInitialized, initialize, settings } = useAppStore();
+  const isInitialized = useAppStore(selectIsInitialized);
+  const settings = useAppStore(selectSettings);
+  const initialize = useAppStore((s) => s.initialize);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Security gate state
+
+  // Determine if security gate should show
+  // PIN requires both the toggle AND a stored PIN hash; biometric just needs the toggle
+  const needsAuth = ((settings.enablePin && !!settings.pinHash) || settings.enableBiometric) && !isAuthenticated;
 
   // Initialize the database, process recurring expenses, and check budgets
   useEffect(() => {
@@ -56,10 +62,6 @@ const AppContent = () => {
     boot();
   }, []);
 
-  // Determine if security gate should show
-  // PIN requires both the toggle AND a stored PIN hash; biometric just needs the toggle
-  const needsAuth = ((settings.enablePin && !!settings.pinHash) || settings.enableBiometric) && !isAuthenticated;
-
   return (
     <>
       <StatusBar
@@ -71,7 +73,9 @@ const AppContent = () => {
       ) : needsAuth ? (
         <PinLockScreen onAuthenticated={() => setIsAuthenticated(true)} />
       ) : (
-        <AppNavigator />
+        <>
+          <AppNavigator />
+        </>
       )}
     </>
   );

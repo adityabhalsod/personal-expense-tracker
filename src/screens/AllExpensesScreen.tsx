@@ -9,7 +9,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
-import { useAppStore } from '../store';
+import { useAppStore, selectExpenses, selectCategories, selectSettings } from '../store';
 import Card from '../components/common/Card';
 import EmptyState from '../components/common/EmptyState';
 import { formatCurrency, formatDate, formatRelativeDate } from '../utils/helpers';
@@ -23,7 +23,11 @@ const AllExpensesScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const navigation = useNavigation<any>();
-  const { expenses, categories, settings, loadExpenses } = useAppStore();
+  // Subscribe to individual store slices to avoid full-store re-renders
+  const expenses = useAppStore(selectExpenses);
+  const categories = useAppStore(selectCategories);
+  const settings = useAppStore(selectSettings);
+  const loadExpenses = useAppStore((s) => s.loadExpenses);
 
   const [sortBy, setSortBy] = useState<SortOption>('date_desc'); // Default: newest first
   const [refreshing, setRefreshing] = useState(false);
@@ -132,7 +136,7 @@ const AllExpensesScreen = () => {
             {expense.notes || category?.name || t.allExpenses.expense}
           </Text>
           <Text style={[styles.expensePayment, { color: theme.colors.textTertiary }]}>
-            {expense.paymentMethod.replace('_', ' ')}
+            {expense.category}
           </Text>
         </View>
         <Text style={[styles.expenseAmount, { color: theme.colors.error }]}>

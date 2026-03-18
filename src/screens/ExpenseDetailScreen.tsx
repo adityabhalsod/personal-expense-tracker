@@ -7,10 +7,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
-import { useAppStore } from '../store';
+import { useAppStore, selectExpenses, selectCategories } from '../store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import { formatCurrency, formatDate, getPaymentMethodLabel } from '../utils/helpers';
+import { formatCurrency, formatDate } from '../utils/helpers';
 
 const ExpenseDetailScreen = () => {
   const { theme } = useTheme();
@@ -20,7 +20,10 @@ const ExpenseDetailScreen = () => {
   const { expenseId } = route.params; // ID of the expense to display
 
   // Find the expense from the global store
-  const { expenses, categories, deleteExpense } = useAppStore();
+  // Subscribe to individual store slices to avoid full-store re-renders
+  const expenses = useAppStore(selectExpenses);
+  const categories = useAppStore(selectCategories);
+  const deleteExpense = useAppStore((s) => s.deleteExpense);
   const expense = expenses.find(e => e.id === expenseId);
 
   // Handle missing expense (edge case if deleted elsewhere)
@@ -76,13 +79,6 @@ const ExpenseDetailScreen = () => {
 
       {/* Detail rows showing all expense fields */}
       <Card style={styles.detailCard}>
-        {/* Payment method detail row */}
-        <DetailRow
-          icon="credit-card"
-          label={t.expenseDetail.paymentMethod}
-          value={getPaymentMethodLabel(expense.paymentMethod)}
-          theme={theme}
-        />
         {/* Currency detail row */}
         <DetailRow icon="currency-usd" label={t.expenseDetail.currency} value={expense.currency} theme={theme} />
         {/* Notes detail row (if present) */}

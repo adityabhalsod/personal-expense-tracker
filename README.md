@@ -14,8 +14,8 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Platform-Android_|_iOS-green" alt="Platform" />
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" />
-  <a href="https://github.com/adityabhalsod/personal-expense-tracker/actions/workflows/android-release.yml"><img src="https://github.com/adityabhalsod/personal-expense-tracker/actions/workflows/android-release.yml/badge.svg" alt="Android Release" /></a>
-  <a href="https://github.com/adityabhalsod/personal-expense-tracker/releases/latest"><img src="https://img.shields.io/github/v/release/adityabhalsod/personal-expense-tracker?include_prereleases&label=Latest%20Release" alt="Latest Release" /></a>
+  <a href="https://github.com/adityabhalsod/expense-tracker/actions/workflows/android-release.yml"><img src="https://github.com/adityabhalsod/expense-tracker/actions/workflows/android-release.yml/badge.svg" alt="Android Release" /></a>
+  <a href="https://github.com/adityabhalsod/expense-tracker/releases/latest"><img src="https://img.shields.io/github/v/release/adityabhalsod/expense-tracker?include_prereleases&label=Latest%20Release" alt="Latest Release" /></a>
 </p>
 
 ---
@@ -47,6 +47,8 @@ Expense Tracker helps you take control of your money. Track every rupee, dollar,
 | 🔒 | **PIN & Biometric Lock** | Protect your data with a 4–6 digit PIN or fingerprint/Face ID |
 | 🌙 | **Dark Mode** | Automatic (follows system) or manual toggle |
 | 🌐 | **Multi-Language** | English, हिन्दी (Hindi), ગુજરાતી (Gujarati) |
+| 🏦 | **Payment Sources** | Manage bank accounts, digital wallets, and credit cards — sensitive data encrypted at rest |
+| 🔐 | **End-to-End Encryption** | AES-256-GCM encryption with PBKDF2 key derivation, hardware-backed key storage via Secure Store |
 
 ---
 
@@ -79,8 +81,8 @@ Expense Tracker helps you take control of your money. Track every rupee, dollar,
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/adityabhalsod/personal-expense-tracker.git
-cd personal-expense-tracker
+git clone https://github.com/adityabhalsod/expense-tracker.git
+cd expense-tracker
 
 # 2. Install dependencies
 npm install
@@ -128,11 +130,14 @@ npx expo start
 Always clear all caches before a production build to ensure fresh assets and code:
 
 ```bash
-# 1. Clear all caches (Metro, Gradle, node_modules cache)
+# 1. expo prebuild for android.
+npx expo prebuild --platform android --no-install
+
+# 2. Clear all caches (Metro, Gradle, node_modules cache)
 rm -rf android/app/build android/.gradle/build-cache node_modules/.cache /tmp/metro-* /tmp/haste-map-*
 cd android && ./gradlew clean && cd ..
 
-# 2. Build release APK for Android
+# 3. Build release APK for Android
 cd android && ANDROID_HOME=$HOME/Android/Sdk ./gradlew app:assembleRelease -x lint -x test --configure-on-demand --build-cache
 ```
 
@@ -165,7 +170,7 @@ Pushing to specific branches triggers a GitHub Actions pipeline that builds a cl
 4. Generates a categorized changelog from commit messages (features, fixes, performance, etc.)
 5. Creates a Git tag, publishes a GitHub Release, and uploads the versioned APK as a downloadable asset
 
-**Download releases:** [GitHub Releases →](https://github.com/adityabhalsod/personal-expense-tracker/releases)
+**Download releases:** [GitHub Releases →](https://github.com/adityabhalsod/expense-tracker/releases)
 
 > **Tip:** Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `perf:`) so the changelog is categorized automatically.
 
@@ -190,6 +195,7 @@ Pushing to specific branches triggers a GitHub Actions pipeline that builds a cl
 | **Dates** | date-fns 4 | Date formatting and range calculations |
 | **Export** | expo-file-system, expo-sharing | File generation and sharing |
 | **Security** | expo-local-authentication, expo-secure-store | Biometrics and encrypted storage |
+| **Encryption** | SubtleCrypto (Web Crypto API), expo-crypto | AES-256-GCM + PBKDF2 key derivation |
 | **Notifications** | expo-notifications | Budget alert push notifications |
 
 ---
@@ -197,7 +203,7 @@ Pushing to specific branches triggers a GitHub Actions pipeline that builds a cl
 ## Project Structure
 
 ```
-personal-expense-tracker/
+expense-tracker/
 ├── App.tsx                  # Root component with providers
 ├── src/
 │   ├── components/          # Reusable UI components
@@ -207,13 +213,15 @@ personal-expense-tracker/
 │   ├── database/            # SQLite service (all CRUD operations)
 │   ├── i18n/                # Translations (en, hi, gu) + LanguageProvider
 │   ├── navigation/          # Tab navigator + stack screens
-│   ├── screens/             # 14 app screens
+│   ├── screens/             # 17 app screens
 │   │   ├── HomeScreen       #   Dashboard with wallet summary
 │   │   ├── ExpensesScreen   #   Filtered expense list
 │   │   ├── AnalyticsScreen  #   Charts and insights
 │   │   ├── WalletScreen     #   Balance and history
 │   │   ├── SettingsScreen   #   Theme, language, security
+│   │   ├── PaymentSources   #   Bank accounts & payment methods
 │   │   └── ...              #   Add, Detail, Search, Export, Budget, etc.
+│   ├── hooks/               # Custom hooks
 │   ├── services/            # Recurring expenses, notifications
 │   ├── store/               # Zustand global state
 │   ├── theme/               # Light & dark theme definitions

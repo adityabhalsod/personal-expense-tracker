@@ -131,6 +131,15 @@ const en = {
     budgets: 'Budgets',
     data: 'DATA',
     exportReports: 'Export Reports',
+    dangerZone: 'DANGER ZONE',
+    resetData: 'Clear All Data',
+    resetDataDesc: 'Delete all expenses, wallets, budgets, and notifications but keep categories and app settings.',
+    resetDataConfirm: 'This will permanently delete all your expenses, wallets, and budgets. Categories and settings will be preserved. This cannot be undone.',
+    resetDatabase: 'Reset Entire Database',
+    resetDatabaseDesc: 'Drop all tables and start fresh. All data including categories will be lost.',
+    resetDatabaseConfirm: 'This will completely reset the app to its initial state. ALL data will be permanently deleted including categories, expenses, wallets, and settings. This cannot be undone.',
+    resetSuccess: 'Reset completed successfully. The app will reload.',
+    resetFailed: 'Reset failed. Please try again.',
     security: 'SECURITY',
     appLock: 'App Lock',
     notifications: 'Notifications',
@@ -145,7 +154,6 @@ const en = {
     amount: 'Amount',
     date: 'Date',
     category: 'Category',
-    paymentMethod: 'Payment Method',
     notes: 'Notes',
     notesPlaceholder: 'Add a note...',
     tags: 'Tags',
@@ -159,12 +167,14 @@ const en = {
     noCategory: 'No Category',
     noCategoryMsg: 'Please select a category for this expense.',
     saveFailed: 'Failed to save expense. Please try again.',
+    enterAmount: 'Please enter a valid amount',
+    selectCategory: 'Please select a category',
+    save: 'Save Expense',
   },
 
   // Expense Detail screen
   expenseDetail: {
     title: 'Expense Detail',
-    paymentMethod: 'Payment Method',
     currency: 'Currency',
     notes: 'Notes',
     tags: 'Tags',
@@ -194,7 +204,7 @@ const en = {
     deleteMsg: 'Are you sure you want to delete this category? Expenses in this category will not be affected.',
   },
 
-  // Wallet Setup screen
+  // Wallet Setup screen (merged with payment source config)
   walletSetup: {
     title: 'Wallet Setup',
     settingUpFor: 'Setting up wallet for',
@@ -204,6 +214,20 @@ const en = {
     balanceHint: 'This will be your starting balance for the month. Expenses will be deducted from this amount.',
     createWallet: 'Create Wallet',
     updateWallet: 'Update Wallet',
+    deleteConfirm: 'Are you sure you want to delete this wallet?',
+    default: 'Default',
+    nameRequired: 'Please enter a name.',
+    saveFailed: 'Failed to save wallet. Please try again.',
+    type: 'Type',
+    bankName: 'Bank Name',
+    bankNamePlaceholder: 'e.g., HDFC Bank',
+    namePlaceholder: 'e.g., HDFC Savings',
+    nickname: 'Nickname (Optional)',
+    nicknamePlaceholder: 'Short alias',
+    icon: 'Icon',
+    color: 'Color',
+    setDefault: 'Set as Default',
+    encryptedNote: 'Encrypted at rest',
   },
 
   // Export Report screen
@@ -320,17 +344,6 @@ const en = {
     noExpensesHint: 'Start tracking your spending by adding your first expense',
     addExpense: 'Add Expense',
     expense: 'Expense',
-  },
-
-  // Payment method labels
-  paymentMethods: {
-    cash: 'Cash',
-    upi: 'UPI',
-    debit_card: 'Debit Card',
-    bank_transfer: 'Bank Transfer',
-    credit_card: 'Credit Card',
-    wallet: 'Wallet',
-    other: 'Other',
   },
 
   // Recurring frequency labels

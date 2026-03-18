@@ -1,5 +1,5 @@
 // Global state management using Zustand for expense tracking
-// Provides reactive state for expenses, categories, wallets, budgets, payment sources, and UPI notifications
+// Provides reactive state for expenses, categories, wallets, budgets, and payment sources
 
 import { create } from 'zustand';
 import { Expense, Category, Wallet, Budget, AppSettings } from '../types';

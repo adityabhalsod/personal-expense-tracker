@@ -47,8 +47,7 @@ Expense Tracker helps you take control of your money. Track every rupee, dollar,
 | 🔒 | **PIN & Biometric Lock** | Protect your data with a 4–6 digit PIN or fingerprint/Face ID |
 | 🌙 | **Dark Mode** | Automatic (follows system) or manual toggle |
 | 🌐 | **Multi-Language** | English, हिन्दी (Hindi), ગુજરાતી (Gujarati) |
-| 📱 | **UPI Detection** | Auto-detects UPI payment notifications (GPay, PhonePe, Paytm, etc.) and shows a popup to save as expense or income |
-| 🏦 | **Payment Sources** | Manage bank accounts, UPI IDs, digital wallets, and credit cards — sensitive data encrypted at rest |
+| 🏦 | **Payment Sources** | Manage bank accounts, digital wallets, and credit cards — sensitive data encrypted at rest |
 | 🔐 | **End-to-End Encryption** | AES-256-GCM encryption with PBKDF2 key derivation, hardware-backed key storage via Secure Store |
 
 ---
@@ -221,9 +220,8 @@ expense-tracker/
 │   │   ├── WalletScreen     #   Balance and history
 │   │   ├── SettingsScreen   #   Theme, language, security
 │   │   ├── PaymentSources   #   Bank accounts & payment methods
-│   │   ├── UPIPayments      #   UPI notification history
 │   │   └── ...              #   Add, Detail, Search, Export, Budget, etc.
-│   ├── hooks/               # Custom hooks (UPI listener, etc.)
+│   ├── hooks/               # Custom hooks
 │   ├── services/            # Recurring expenses, notifications
 │   ├── store/               # Zustand global state
 │   ├── theme/               # Light & dark theme definitions

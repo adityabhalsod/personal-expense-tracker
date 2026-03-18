@@ -30,18 +30,17 @@ export interface Category {
 }
 
 // Supported wallet/payment source types
-export type WalletType = 'cash' | 'bank_account' | 'upi' | 'digital_wallet' | 'credit_card' | 'other';
+export type WalletType = 'cash' | 'bank_account' | 'digital_wallet' | 'credit_card' | 'other';
 
 // Wallet representing a financial account or payment source
 export interface Wallet {
   id: string; // Unique identifier for the wallet
   name: string; // Display name (e.g., "HDFC Savings", "Cash")
-  type: WalletType; // Type of payment source (bank, UPI, cash, etc.)
+  type: WalletType; // Type of payment source (bank, cash, etc.)
   initialBalance: number; // Starting balance when wallet was created
   currentBalance: number; // Remaining balance after expenses
   currency: string; // Currency code for this wallet
   bankName?: string; // Bank name for bank accounts (e.g., "HDFC Bank")
-  upiId?: string; // UPI VPA handle (encrypted at rest)
   nickname?: string; // Short alias for quick identification
   iconName: string; // MaterialCommunityIcons icon name for display
   color: string; // Hex color for visual identification in lists

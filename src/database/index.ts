@@ -87,7 +87,6 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
       currentBalance REAL NOT NULL DEFAULT 0,
       currency TEXT NOT NULL DEFAULT 'INR',
       bankName TEXT,
-      upiId TEXT,
       nickname TEXT,
       iconName TEXT NOT NULL DEFAULT 'wallet',
       color TEXT NOT NULL DEFAULT '#4ECDC4',
@@ -112,28 +111,12 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
     );
   `);
 
-  // Create upi_notifications table to log detected UPI payment notifications
-  await database.execAsync(`
-    CREATE TABLE IF NOT EXISTS upi_notifications (
-      id TEXT PRIMARY KEY NOT NULL,
-      appPackage TEXT NOT NULL,
-      appName TEXT NOT NULL,
-      transactionType TEXT NOT NULL,
-      amount REAL NOT NULL,
-      message TEXT NOT NULL,
-      timestamp TEXT NOT NULL,
-      isProcessed INTEGER NOT NULL DEFAULT 0,
-      walletId TEXT,
-      FOREIGN KEY (walletId) REFERENCES wallets(id)
-    );
-  `);
 
   // --- Migrations: add new wallet columns for existing databases upgrading from v1 ---
   // These must run BEFORE index creation since indexes reference these new columns
   const walletMigrationColumns = [
     { name: 'type', sql: "ALTER TABLE wallets ADD COLUMN type TEXT NOT NULL DEFAULT 'cash'" },
     { name: 'bankName', sql: 'ALTER TABLE wallets ADD COLUMN bankName TEXT' },
-    { name: 'upiId', sql: 'ALTER TABLE wallets ADD COLUMN upiId TEXT' },
     { name: 'nickname', sql: 'ALTER TABLE wallets ADD COLUMN nickname TEXT' },
     { name: 'iconName', sql: "ALTER TABLE wallets ADD COLUMN iconName TEXT NOT NULL DEFAULT 'wallet'" },
     { name: 'color', sql: "ALTER TABLE wallets ADD COLUMN color TEXT NOT NULL DEFAULT '#4ECDC4'" },
@@ -166,7 +149,6 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
           currentBalance REAL NOT NULL DEFAULT 0,
           currency TEXT NOT NULL DEFAULT 'INR',
           bankName TEXT,
-          upiId TEXT,
           nickname TEXT,
           iconName TEXT NOT NULL DEFAULT 'wallet',
           color TEXT NOT NULL DEFAULT '#4ECDC4',
@@ -178,13 +160,13 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
       `);
       // Copy existing wallet rows, mapping old columns to new schema
       await database.execAsync(`
-        INSERT OR IGNORE INTO wallets_v2 (id, name, type, initialBalance, currentBalance, currency, bankName, upiId, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
+        INSERT OR IGNORE INTO wallets_v2 (id, name, type, initialBalance, currentBalance, currency, bankName, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
         SELECT id, name,
           COALESCE(type, 'cash'),
           COALESCE(initialBalance, 0),
           COALESCE(currentBalance, 0),
           COALESCE(currency, 'INR'),
-          bankName, upiId, nickname,
+          bankName, nickname,
           COALESCE(iconName, 'wallet'),
           COALESCE(color, '#4ECDC4'),
           COALESCE(isDefault, 0),
@@ -197,13 +179,6 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
     }
   } catch (e) {
     console.warn('Wallet table migration (month/year removal) skipped:', e);
-  }
-
-  // Migration: add walletId column to upi_notifications for wallet FK
-  try {
-    await database.execAsync('ALTER TABLE upi_notifications ADD COLUMN walletId TEXT');
-  } catch {
-    // Column already exists — ignore
   }
 
   // Migration: add walletId column to expenses for wallet FK
@@ -221,7 +196,6 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
     CREATE INDEX IF NOT EXISTS idx_expenses_wallet ON expenses(walletId);
     CREATE INDEX IF NOT EXISTS idx_wallets_type ON wallets(type);
     CREATE INDEX IF NOT EXISTS idx_wallets_default ON wallets(isDefault);
-    CREATE INDEX IF NOT EXISTS idx_upi_notifications_timestamp ON upi_notifications(timestamp);
   `);
 
   // Seed default categories if the categories table is empty
@@ -473,15 +447,14 @@ export const addWallet = async (wallet: Omit<Wallet, 'id' | 'createdAt' | 'updat
   const now = new Date().toISOString();
 
   // Encrypt sensitive fields before storing
-  const encryptedUpiId = wallet.upiId ? await encryptData(wallet.upiId) : null;
   const encryptedMetadata = wallet.metadata ? await encryptData(wallet.metadata) : null;
 
   await database.runAsync(
-    `INSERT INTO wallets (id, name, type, initialBalance, currentBalance, currency, bankName, upiId, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO wallets (id, name, type, initialBalance, currentBalance, currency, bankName, nickname, iconName, color, isDefault, metadata, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id, wallet.name, wallet.type, wallet.initialBalance, wallet.currentBalance,
-      wallet.currency, wallet.bankName || null, encryptedUpiId,
+      wallet.currency, wallet.bankName || null,
       wallet.nickname || null, wallet.iconName, wallet.color,
       wallet.isDefault ? 1 : 0, encryptedMetadata, now, now,
     ]
@@ -509,10 +482,6 @@ export const updateWallet = async (id: string, updates: Partial<Wallet>): Promis
   if (updates.isDefault !== undefined) { fields.push('isDefault = ?'); values.push(updates.isDefault ? 1 : 0); }
 
   // Re-encrypt sensitive fields if they are being updated
-  if (updates.upiId !== undefined) {
-    fields.push('upiId = ?');
-    values.push(updates.upiId ? await encryptData(updates.upiId) : null);
-  }
   if (updates.metadata !== undefined) {
     fields.push('metadata = ?');
     values.push(updates.metadata ? await encryptData(updates.metadata) : null);
@@ -646,7 +615,6 @@ export const clearAllData = async (): Promise<void> => {
   const database = await getDatabase();
   // Delete all rows from data tables in dependency order (children first)
   await database.execAsync(`
-    DELETE FROM upi_notifications;
     DELETE FROM expenses;
     DELETE FROM budgets;
     DELETE FROM wallets;
@@ -659,7 +627,6 @@ export const resetDatabase = async (): Promise<void> => {
   const database = await getDatabase();
   // Drop every table in reverse-dependency order
   await database.execAsync(`
-    DROP TABLE IF EXISTS upi_notifications;
     DROP TABLE IF EXISTS expenses;
     DROP TABLE IF EXISTS budgets;
     DROP TABLE IF EXISTS wallets;
@@ -675,7 +642,6 @@ export const resetDatabase = async (): Promise<void> => {
 const parseWalletRow = async (row: any): Promise<Wallet> => ({
   ...row,
   isDefault: row.isDefault === 1,
-  upiId: row.upiId ? await decryptData(row.upiId) : undefined,
   metadata: row.metadata ? await decryptData(row.metadata) : undefined,
 });
 

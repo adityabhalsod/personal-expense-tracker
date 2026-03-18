@@ -1,4 +1,4 @@
-// End-to-end encryption utility for sensitive wallet data (UPI IDs, metadata)
+// End-to-end encryption utility for sensitive wallet data (metadata)
 // Uses expo-crypto for key derivation and a stream cipher for encryption
 // React Native (Hermes) does NOT support Web Crypto SubtleCrypto — this module
 // uses only expo-crypto APIs that work reliably on device

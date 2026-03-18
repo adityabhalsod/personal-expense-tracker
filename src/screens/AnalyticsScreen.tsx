@@ -1,12 +1,13 @@
 // Analytics dashboard screen with pie charts, bar charts, and spending trends
 // Provides visual insights into spending patterns across different time periods
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { PieChart, BarChart, LineChart } from 'react-native-chart-kit';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
@@ -41,13 +42,8 @@ const AnalyticsScreen = () => {
   const [dailyData, setDailyData] = useState<any[]>([]); // Daily trend data
   const [expenseCount, setExpenseCount] = useState(0); // Number of transactions
 
-  // Reload analytics data whenever the time range changes
-  useEffect(() => {
-    loadAnalytics();
-  }, [timeRange]);
-
   // Fetch all analytics data from the database for the selected period
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const { start, end } = getDateRange(timeRange); // Calculate date boundaries
@@ -88,7 +84,15 @@ const AnalyticsScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange, categories, theme.colors.text]);
+
+  // Refresh analytics on screen focus AND when time range changes
+  // useFocusEffect fires on initial mount + every time this tab gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadAnalytics();
+    }, [loadAnalytics])
+  );
 
   // Prepare pie chart data from category breakdown (memoized)
   const pieChartData = useMemo(() => categoryData.slice(0, 6).map((cat) => ({

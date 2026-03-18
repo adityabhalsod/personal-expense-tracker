@@ -1,5 +1,5 @@
 // Wallet setup screen for creating or editing a wallet (payment source)
-// Supports type selector, bank name, UPI ID, icon/color pickers, and default toggle
+// Supports type selector, bank name, icon/color pickers, and default toggle
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
@@ -19,7 +19,6 @@ import Button from '../components/common/Button';
 const WALLET_TYPES: { type: WalletType; icon: string; label: string }[] = [
   { type: 'cash', icon: 'cash', label: 'Cash' },
   { type: 'bank_account', icon: 'bank', label: 'Bank Account' },
-  { type: 'upi', icon: 'cellphone-nfc', label: 'UPI' },
   { type: 'digital_wallet', icon: 'wallet-outline', label: 'Digital Wallet' },
   { type: 'credit_card', icon: 'credit-card-outline', label: 'Credit Card' },
   { type: 'other', icon: 'dots-horizontal-circle-outline', label: 'Other' },
@@ -27,7 +26,7 @@ const WALLET_TYPES: { type: WalletType; icon: string; label: string }[] = [
 
 // Icon picker options for visual wallet identification
 const ICON_OPTIONS = [
-  'bank', 'cellphone-nfc', 'wallet-outline', 'credit-card-outline',
+  'bank', 'wallet-outline', 'credit-card-outline',
   'cash', 'bitcoin', 'contactless-payment', 'piggy-bank-outline',
   'currency-inr', 'hand-coin-outline', 'store-outline', 'briefcase-outline',
 ];
@@ -63,7 +62,6 @@ const WalletSetupScreen = () => {
   const [type, setType] = useState<WalletType>('cash');
   const [initialBalance, setInitialBalance] = useState('');
   const [bankName, setBankName] = useState('');
-  const [upiId, setUpiId] = useState('');
   const [nickname, setNickname] = useState('');
   const [iconName, setIconName] = useState('cash');
   const [color, setColor] = useState('#4CAF50');
@@ -91,7 +89,6 @@ const WalletSetupScreen = () => {
       setType(existingWallet.type);
       setInitialBalance(existingWallet.initialBalance.toString());
       setBankName(existingWallet.bankName || '');
-      setUpiId(existingWallet.upiId || '');
       setNickname(existingWallet.nickname || '');
       setIconName(existingWallet.iconName);
       setColor(existingWallet.color);
@@ -124,7 +121,6 @@ const WalletSetupScreen = () => {
           initialBalance: balance,
           currentBalance: existingWallet.currentBalance + diff,
           bankName: bankName.trim() || undefined,
-          upiId: upiId.trim() || undefined,
           nickname: nickname.trim() || undefined,
           iconName,
           color,
@@ -139,7 +135,6 @@ const WalletSetupScreen = () => {
           currentBalance: balance, // Start with full balance
           currency: settings?.defaultCurrency || 'INR',
           bankName: bankName.trim() || undefined,
-          upiId: upiId.trim() || undefined,
           nickname: nickname.trim() || undefined,
           iconName,
           color,
@@ -153,7 +148,7 @@ const WalletSetupScreen = () => {
     }
     // Navigate back only after successful save (outside try/catch to avoid false error)
     navigation.goBack();
-  }, [name, type, initialBalance, bankName, upiId, nickname, iconName, color, isDefault, walletId, existingWallet, settings, addWallet, updateWallet]);
+  }, [name, type, initialBalance, bankName, nickname, iconName, color, isDefault, walletId, existingWallet, settings, addWallet, updateWallet]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -220,30 +215,6 @@ const WalletSetupScreen = () => {
               placeholder={t.walletSetup?.bankNamePlaceholder || 'e.g., HDFC Bank'}
               placeholderTextColor={theme.colors.textTertiary}
             />
-          </View>
-        )}
-
-        {/* UPI ID input (shown for UPI type) */}
-        {type === 'upi' && (
-          <View style={styles.section}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>
-              {t.walletSetup?.upiId || 'UPI ID'}
-            </Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.colors.inputBackground, color: theme.colors.text, borderColor: theme.colors.border }]}
-              value={upiId}
-              onChangeText={setUpiId}
-              placeholder="user@upi"
-              placeholderTextColor={theme.colors.textTertiary}
-              autoCapitalize="none"
-            />
-            {/* Encryption notice for sensitive data */}
-            <View style={styles.encryptionNote}>
-              <MaterialCommunityIcons name="shield-lock-outline" size={14} color={theme.colors.success} />
-              <Text style={[styles.encryptionText, { color: theme.colors.success }]}>
-                {t.walletSetup?.encryptedNote || 'Encrypted at rest'}
-              </Text>
-            </View>
           </View>
         )}
 

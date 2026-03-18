@@ -17,7 +17,6 @@ import { Wallet, WalletType } from '../types';
 const WALLET_TYPE_META: Record<WalletType, { icon: string; label: string }> = {
   cash: { icon: 'cash', label: 'Cash' },
   bank_account: { icon: 'bank', label: 'Bank' },
-  upi: { icon: 'cellphone-nfc', label: 'UPI' },
   digital_wallet: { icon: 'wallet-outline', label: 'Digital' },
   credit_card: { icon: 'credit-card-outline', label: 'Card' },
   other: { icon: 'dots-horizontal-circle-outline', label: 'Other' },
@@ -118,8 +117,9 @@ const WalletScreen = () => {
               {/* Income / Expense summary row */}
               <View style={styles.summaryRow}>
                 <View style={styles.summaryItem}>
-                  <View style={styles.summaryIcon}>
-                    <MaterialCommunityIcons name="arrow-down" size={16} color={theme.colors.success} />
+                  {/* Green-tinted icon background for starting balance */}
+                  <View style={[styles.summaryIcon, { backgroundColor: 'rgba(76, 217, 100, 0.3)' }]}>
+                    <MaterialCommunityIcons name="arrow-down" size={16} color="#FFFFFF" />
                   </View>
                   <View>
                     <Text style={styles.summaryItemLabel}>{t.wallet.startingBalance}</Text>
@@ -127,8 +127,9 @@ const WalletScreen = () => {
                   </View>
                 </View>
                 <View style={styles.summaryItem}>
-                  <View style={styles.summaryIcon}>
-                    <MaterialCommunityIcons name="arrow-up" size={16} color={theme.colors.error} />
+                  {/* Red-tinted icon background for total spent */}
+                  <View style={[styles.summaryIcon, { backgroundColor: 'rgba(255, 69, 58, 0.3)' }]}>
+                    <MaterialCommunityIcons name="arrow-up" size={16} color="#FFFFFF" />
                   </View>
                   <View>
                     <Text style={styles.summaryItemLabel}>{t.wallet.totalSpent}</Text>

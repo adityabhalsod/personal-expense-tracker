@@ -10,6 +10,7 @@ import { useTheme } from '../theme';
 import { useAppStore, selectSettings } from '../store';
 import { CURRENCIES } from '../constants';
 import { useLanguage, LANGUAGES } from '../i18n';
+import Constants from 'expo-constants'; // Provides access to app.json config at runtime
 
 const SettingsScreen = () => {
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
@@ -197,8 +198,8 @@ const SettingsScreen = () => {
         {/* About section */}
         <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.about}</Text>
         <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          <SettingsRow icon="information" label={t.settings.version} value="1.1.0" /> 
-          {/* TODO: Set dynamic version */}
+          {/* Version is read dynamically from app.json via expo-constants */}
+          <SettingsRow icon="information" label={t.settings.version} value={Constants.expoConfig?.version ?? '—'} />
         </View>
 
         {/* Danger zone — reset actions */}

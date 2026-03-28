@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, TouchableWithoutFeedback, Alert, Platform, Keyboard,
+  View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, TouchableWithoutFeedback, Alert, Platform, Keyboard, Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -410,11 +410,11 @@ const AddExpenseScreen = () => {
                 setReceiptUris(receiptUris.filter((_, i) => i !== idx));
               }}>
                 <View style={{ width: 72, height: 72, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.inputBackground }}>
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <MaterialCommunityIcons name="image" size={28} color={theme.colors.textSecondary} />
-                    <View style={{ position: 'absolute', top: 2, right: 2, backgroundColor: '#EF4444', borderRadius: 10, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' }}>
-                      <MaterialCommunityIcons name="close" size={12} color="#FFF" />
-                    </View>
+                  {/* Render actual receipt image from local file URI */}
+                  <Image source={{ uri }} style={{ width: 72, height: 72 }} resizeMode="cover" />
+                  {/* Red X button overlay to remove this receipt */}
+                  <View style={{ position: 'absolute', top: 2, right: 2, backgroundColor: '#EF4444', borderRadius: 10, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' }}>
+                    <MaterialCommunityIcons name="close" size={12} color="#FFF" />
                   </View>
                 </View>
               </TouchableOpacity>

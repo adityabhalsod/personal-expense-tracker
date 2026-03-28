@@ -145,6 +145,9 @@ const en = {
     notifications: 'Notifications',
     about: 'ABOUT',
     version: 'Version',
+    accessibility: 'ACCESSIBILITY',
+    highContrast: 'High Contrast',
+    fontSize: 'Font Size',
   },
 
   // Add/Edit Expense screen
@@ -606,6 +609,8 @@ const en = {
     income: 'Income',
     expense: 'Expense',
     noIncome: 'No income recorded',
+    stackedChart: 'Category Breakdown by Week',
+    incomeFlow: 'Spending Flow',
   },
 };
 

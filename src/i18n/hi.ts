@@ -147,6 +147,9 @@ const hi: TranslationKeys = {
     notifications: 'सूचनाएं',
     about: 'के बारे में',
     version: 'संस्करण',
+    accessibility: 'पहुँच',
+    highContrast: 'उच्च कंट्रास्ट',
+    fontSize: 'फ़ॉन्ट आकार',
   },
 
   // खर्च जोड़ें/संपादन स्क्रीन
@@ -595,6 +598,8 @@ const hi: TranslationKeys = {
     income: 'आय',
     expense: 'खर्च',
     noIncome: 'कोई आय दर्ज नहीं',
+    stackedChart: 'साप्ताहिक श्रेणी विभाजन',
+    incomeFlow: 'खर्च प्रवाह',
   },
 };
 

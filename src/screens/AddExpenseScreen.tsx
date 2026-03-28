@@ -48,7 +48,9 @@ const AddExpenseScreen = () => {
   const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>('monthly'); // Recurrence interval
   const [loading, setLoading] = useState(false); // Submission loading state
   const [showDatePicker, setShowDatePicker] = useState(false); // Date picker visibility
-  const [receiptUris, setReceiptUris] = useState<string[]>([]); // Attached receipt photo URIs
+  const [receiptUris, setReceiptUris] = useState<string[]>([]); // Attached receipt photo URIs (both existing + new)
+  const [existingReceiptIds, setExistingReceiptIds] = useState<Map<string, string>>(new Map()); // Map<uri, receiptId> for receipts already saved in DB
+  const [removedReceiptIds, setRemovedReceiptIds] = useState<string[]>([]); // Receipt IDs to delete on save
   // Eagerly init wallet selection from store to prevent flash of unselected state
   const [selectedWalletId, setSelectedWalletId] = useState(() => {
     const defaultW = wallets.find(w => w.isDefault) || wallets[0];
@@ -111,6 +113,16 @@ const AddExpenseScreen = () => {
         if (expense.walletId) setSelectedWalletId(expense.walletId); // Restore wallet selection
         // Update header title to indicate edit mode
         navigation.setOptions({ title: t.addExpense.editTitle });
+
+        // Load existing receipt attachments from the database for this expense
+        db.getReceiptsByExpense(expenseId).then((receipts) => {
+          const uris = receipts.map(r => r.uri); // Extract URIs for display
+          setReceiptUris(uris);
+          // Build a map of URI → receipt ID so we can distinguish existing from new
+          const idMap = new Map<string, string>();
+          receipts.forEach(r => idMap.set(r.uri, r.id));
+          setExistingReceiptIds(idMap);
+        });
       }
     }
   }, [expenseId]);
@@ -144,9 +156,15 @@ const AddExpenseScreen = () => {
       if (expenseId) {
         // Update existing expense record
         await updateExpense(expenseId, expenseData);
-        // Save any new receipt attachments
+        // Delete receipts that the user removed during this edit session
+        for (const id of removedReceiptIds) {
+          await db.deleteReceipt(id);
+        }
+        // Save only newly added receipt attachments (skip URIs that already exist in DB)
         for (const uri of receiptUris) {
-          await db.addReceipt({ expenseId, uri });
+          if (!existingReceiptIds.has(uri)) {
+            await db.addReceipt({ expenseId, uri });
+          }
         }
       } else {
         // Create new expense record
@@ -205,6 +223,7 @@ const AddExpenseScreen = () => {
                 onSubmitEditing={Keyboard.dismiss}
                 selectionColor="rgba(255,255,255,0.5)"
                 caretHidden={false}
+                accessibilityLabel={t.addExpense.amount}
               />
             </View>
           </View>
@@ -312,6 +331,7 @@ const AddExpenseScreen = () => {
             multiline
             numberOfLines={3}
             textAlignVertical="top" // Align text to top of multiline input
+            accessibilityLabel={t.addExpense.notes}
           />
         </View>
 
@@ -378,7 +398,17 @@ const AddExpenseScreen = () => {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             {/* Thumbnail previews of attached receipt photos */}
             {receiptUris.map((uri, idx) => (
-              <TouchableOpacity key={idx} onPress={() => setReceiptUris(receiptUris.filter((_, i) => i !== idx))}>
+              <TouchableOpacity key={idx} onPress={() => {
+                // Track removal of existing DB receipts for deletion on save
+                const receiptId = existingReceiptIds.get(uri);
+                if (receiptId) {
+                  setRemovedReceiptIds(prev => [...prev, receiptId]);
+                  // Remove from the existing map so it won't be skipped if re-added
+                  setExistingReceiptIds(prev => { const next = new Map(prev); next.delete(uri); return next; });
+                }
+                // Remove URI from the display list
+                setReceiptUris(receiptUris.filter((_, i) => i !== idx));
+              }}>
                 <View style={{ width: 72, height: 72, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.inputBackground }}>
                   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <MaterialCommunityIcons name="image" size={28} color={theme.colors.textSecondary} />

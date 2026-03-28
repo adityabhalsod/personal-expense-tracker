@@ -98,3 +98,33 @@ export const darkTheme = {
 
 // Type export for the theme object used across the app
 export type Theme = typeof lightTheme;
+
+// High-contrast color overrides for accessibility — applied on top of light/dark themes
+export const highContrastOverrides = {
+  light: {
+    text: '#000000', // Pure black for maximum readability
+    textSecondary: '#1A1A1A', // Near-black for secondary text
+    textTertiary: '#333333', // Dark grey for hints
+    border: '#666666', // Stronger borders for visibility
+    primary: '#4338CA', // Deeper indigo for contrast on white
+    expense: '#B91C1C', // Darker red for contrast
+    income: '#047857', // Darker green for contrast
+  },
+  dark: {
+    text: '#FFFFFF', // Pure white for maximum readability
+    textSecondary: '#E5E5E5', // Near-white for secondary text
+    textTertiary: '#CCCCCC', // Light grey for hints
+    border: '#888888', // Brighter borders for visibility
+    primary: '#A5B4FC', // Brighter primary for dark backgrounds
+    expense: '#FCA5A5', // Brighter red for dark backgrounds
+    income: '#6EE7B7', // Brighter green for dark backgrounds
+  },
+};
+
+// Font scale multipliers mapped to user preference
+export const fontScaleMultipliers: Record<string, number> = {
+  small: 0.85,
+  default: 1.0,
+  large: 1.2,
+  xlarge: 1.4,
+};

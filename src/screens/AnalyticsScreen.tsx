@@ -8,7 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { PieChart, BarChart, LineChart } from 'react-native-chart-kit';
+import { PieChart, BarChart, LineChart, StackedBarChart } from 'react-native-chart-kit';
+import Svg, { Rect, Text as SvgText, Path, Line } from 'react-native-svg';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
 import { useAppStore, selectCategories } from '../store';
@@ -42,6 +43,7 @@ const AnalyticsScreen = () => {
   const [dailyData, setDailyData] = useState<any[]>([]); // Daily trend data
   const [expenseCount, setExpenseCount] = useState(0); // Number of transactions
   const [totalIncome, setTotalIncome] = useState(0); // Total income in period
+  const [weeklyCategories, setWeeklyCategories] = useState<{ week: string; category: string; total: number }[]>([]); // Weekly stacked data
 
   // Fetch all analytics data from the database for the selected period
   const loadAnalytics = useCallback(async () => {
@@ -50,15 +52,17 @@ const AnalyticsScreen = () => {
       const { start, end } = getDateRange(timeRange); // Calculate date boundaries
 
       // Fetch total expenses and category breakdown in parallel
-      const [total, catTotals, dailyTotals, income] = await Promise.all([
+      const [total, catTotals, dailyTotals, income, weeklyCats] = await Promise.all([
         db.getTotalExpenses(start, end),
         db.getCategoryTotals(start, end),
         db.getDailyTotals(start, end),
         db.getTotalIncome(start, end),
+        db.getCategoryTotalsByWeek(start, end),
       ]);
 
       setTotalExpenses(total);
       setTotalIncome(income);
+      setWeeklyCategories(weeklyCats); // Store weekly category breakdown for stacked chart
       setExpenseCount(catTotals.reduce((sum, c) => sum + c.count, 0)); // Sum transaction counts
 
       // Map category totals with colors and icons from the categories list
@@ -129,6 +133,49 @@ const AnalyticsScreen = () => {
     propsForLabels: { fontSize: 10 },
     propsForBackgroundLines: { strokeDasharray: '', stroke: theme.colors.border },
   }), [theme.colors]);
+
+  // Prepare stacked bar chart data — top 4 categories by week (memoized)
+  const stackedBarData = useMemo(() => {
+    if (weeklyCategories.length === 0) return null;
+    // Get top 4 categories by total spend across all weeks
+    const catTotals = new Map<string, number>();
+    weeklyCategories.forEach(wc => catTotals.set(wc.category, (catTotals.get(wc.category) || 0) + wc.total));
+    const topCats = [...catTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
+    // Get unique weeks sorted chronologically
+    const weeks = [...new Set(weeklyCategories.map(wc => wc.week))].sort().slice(-6);
+    if (weeks.length < 2) return null; // Need at least 2 weeks for comparison
+    // Build data matrix: each row = week, each col = category total for that week
+    const data = weeks.map(week => topCats.map(cat => {
+      const entry = weeklyCategories.find(wc => wc.week === week && wc.category === cat);
+      return entry ? entry.total : 0;
+    }));
+    // Map category colors
+    const colors = topCats.map(cat => {
+      const c = categories.find(c => c.name === cat);
+      return c?.color || '#999';
+    });
+    return {
+      labels: weeks.map(w => w.replace(/^\d{4}-W/, 'W')), // Shorten "2024-W23" to "W23"
+      legend: topCats,
+      data,
+      barColors: colors,
+    };
+  }, [weeklyCategories, categories]);
+
+  // Prepare spending flow data — income to top category allocation (memoized)
+  const flowData = useMemo(() => {
+    if (totalIncome === 0 || categoryData.length === 0) return null;
+    // Take top 5 categories for the flow visualization
+    const topCats = categoryData.slice(0, 5);
+    const otherTotal = categoryData.slice(5).reduce((sum, c) => sum + c.amount, 0);
+    const entries = [...topCats.map(c => ({ name: c.name, amount: c.amount, color: c.color }))];
+    if (otherTotal > 0) entries.push({ name: 'Other', amount: otherTotal, color: '#9CA3AF' });
+    // Calculate remaining (savings) if income > expenses
+    const totalSpent = entries.reduce((sum, e) => sum + e.amount, 0);
+    const savings = totalIncome - totalSpent;
+    if (savings > 0) entries.push({ name: 'Savings', amount: savings, color: '#10B981' });
+    return entries;
+  }, [totalIncome, categoryData]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -282,6 +329,88 @@ const AnalyticsScreen = () => {
                       {totalIncome > 0 ? `${(((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(0)}% ${t.dataViz.savingsRate}` : t.dataViz.noIncome}
                     </Text>
                   </View>
+                </View>
+              </Card>
+            )}
+
+            {/* Stacked bar chart — category spending over weeks */}
+            {stackedBarData && (
+              <Card style={styles.chartCard}>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.dataViz?.stackedChart || 'Category Breakdown by Week'}</Text>
+                <StackedBarChart
+                  data={stackedBarData}
+                  width={screenWidth - 64}
+                  height={240}
+                  chartConfig={{
+                    ...chartConfig,
+                    barPercentage: 0.6,
+                  }}
+                  style={styles.chart}
+                  hideLegend={false}
+                />
+              </Card>
+            )}
+
+            {/* Spending flow — income flowing into category allocations */}
+            {flowData && totalIncome > 0 && (
+              <Card style={styles.chartCard}>
+                <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.dataViz?.incomeFlow || 'Spending Flow'}</Text>
+                <View accessibilityLabel="Spending flow from income to categories">
+                  <Svg width={screenWidth - 64} height={Math.max(flowData.length * 38 + 40, 200)}>
+                    {/* Source: Income label on the left */}
+                    <Rect x={0} y={20} width={90} height={36} rx={8} fill={theme.colors.primary} />
+                    <SvgText x={45} y={43} fontSize={12} fontWeight="600" fill="#FFFFFF" textAnchor="middle">
+                      {t.dataViz?.income || 'Income'}
+                    </SvgText>
+                    <SvgText x={45} y={70} fontSize={10} fill={theme.colors.textSecondary} textAnchor="middle">
+                      {formatCompactNumber(totalIncome)}
+                    </SvgText>
+                    {/* Flow paths from income to each category */}
+                    {flowData.map((entry, idx) => {
+                      const yTarget = 20 + idx * 38; // Vertical position for each flow target
+                      const barWidth = Math.max((entry.amount / totalIncome) * 120, 20); // Proportional width
+                      return (
+                        <React.Fragment key={idx}>
+                          {/* Curved path from income box to category bar */}
+                          <Path
+                            d={`M 90 38 C 130 38, 130 ${yTarget + 18}, 160 ${yTarget + 18}`}
+                            stroke={entry.color}
+                            strokeWidth={Math.max((entry.amount / totalIncome) * 6, 1.5)}
+                            fill="none"
+                            opacity={0.6}
+                          />
+                          {/* Category bar */}
+                          <Rect
+                            x={160}
+                            y={yTarget}
+                            width={barWidth}
+                            height={28}
+                            rx={6}
+                            fill={entry.color}
+                            opacity={0.85}
+                          />
+                          {/* Category name and amount label */}
+                          <SvgText
+                            x={160 + barWidth + 6}
+                            y={yTarget + 14}
+                            fontSize={11}
+                            fontWeight="500"
+                            fill={theme.colors.text}
+                          >
+                            {entry.name}
+                          </SvgText>
+                          <SvgText
+                            x={160 + barWidth + 6}
+                            y={yTarget + 26}
+                            fontSize={9}
+                            fill={theme.colors.textSecondary}
+                          >
+                            {formatCompactNumber(entry.amount)} ({totalIncome > 0 ? ((entry.amount / totalIncome) * 100).toFixed(0) : 0}%)
+                          </SvgText>
+                        </React.Fragment>
+                      );
+                    })}
+                  </Svg>
                 </View>
               </Card>
             )}

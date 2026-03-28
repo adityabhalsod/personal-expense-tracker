@@ -147,6 +147,9 @@ const gu: TranslationKeys = {
     notifications: 'સૂચનાઓ',
     about: 'વિશે',
     version: 'આવૃત્તિ',
+    accessibility: 'ઍક્સેસિબિલિટી',
+    highContrast: 'ઉચ્ચ કોન્ટ્રાસ્ટ',
+    fontSize: 'ફોન્ટ કદ',
   },
 
   // ખર્ચ ઉમેરો/ફેરફાર સ્ક્રીન
@@ -597,6 +600,8 @@ const gu: TranslationKeys = {
     income: 'આવક',
     expense: 'ખર્ચ',
     noIncome: 'કોઈ આવક નોંધાયેલ નથી',
+    stackedChart: 'સાપ્તાહિક શ્રેણી વિભાજન',
+    incomeFlow: 'ખર્ચ પ્રવાહ',
   },
 };
 

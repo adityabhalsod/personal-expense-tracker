@@ -896,6 +896,17 @@ export const getCategoryTotals = async (startDate: string, endDate: string): Pro
   );
 };
 
+// Get category spending grouped by week number for stacked bar charts
+export const getCategoryTotalsByWeek = async (startDate: string, endDate: string): Promise<{ week: string; category: string; total: number }[]> => {
+  const database = await getDatabase();
+  return database.getAllAsync<{ week: string; category: string; total: number }>(
+    `SELECT strftime('%Y-W%W', date) as week, category, SUM(amount) as total
+     FROM expenses WHERE date >= ? AND date <= ?
+     GROUP BY week, category ORDER BY week ASC, total DESC`,
+    [startDate, endDate]
+  );
+};
+
 // Get daily spending totals for a date range (used for trend charts)
 export const getDailyTotals = async (startDate: string, endDate: string): Promise<{ date: string; total: number }[]> => {
   const database = await getDatabase();

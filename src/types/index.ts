@@ -156,14 +156,6 @@ export interface MonthlyInsight {
   value?: number; // Optional numeric value (e.g., percentage change)
 }
 
-// Shared wallet member for family/multi-user wallet support
-export interface SharedWalletMember {
-  id: string; // Unique member identifier
-  name: string; // Member display name
-  avatar?: string; // Optional avatar URI or icon name
-  role: 'owner' | 'editor' | 'viewer' | 'admin' | 'member'; // Permission level for wallet access
-}
-
 // Onboarding step configuration for the walkthrough flow
 export interface OnboardingStep {
   id: string; // Step identifier
@@ -259,7 +251,6 @@ export type RootStackParamList = {
   ExpenseTemplates: undefined; // Expense templates/favorites screen
   CalendarHeatmap: undefined; // Calendar heatmap view screen
   Streaks: undefined; // Streaks & gamification screen
-  SharedWallets: undefined; // Family / shared wallets screen
   Onboarding: undefined; // Onboarding walkthrough (first launch)
 };
 

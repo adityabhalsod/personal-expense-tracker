@@ -40,7 +40,6 @@ const ExpenseTemplatesScreen = React.lazy(() => import('../screens/ExpenseTempla
 const CalendarHeatmapScreen = React.lazy(() => import('../screens/CalendarHeatmapScreen'));
 const StreaksScreen = React.lazy(() => import('../screens/StreaksScreen'));
 const MonthlyInsightsScreen = React.lazy(() => import('../screens/MonthlyInsightsScreen'));
-const SharedWalletsScreen = React.lazy(() => import('../screens/SharedWalletsScreen'));
 const OnboardingScreen = React.lazy(() => import('../screens/OnboardingScreen'));
 
 // Minimal fallback spinner shown while a lazy screen loads
@@ -242,8 +241,6 @@ const AppNavigator = ({ initialRoute = 'MainTabs' }: { initialRoute?: string }) 
         <Stack.Screen name="Streaks" component={withSuspense(StreaksScreen)} options={{ title: t.streaks.title }} />
         {/* Smart Monthly Insights */}
         <Stack.Screen name="MonthlyInsights" component={withSuspense(MonthlyInsightsScreen)} options={{ title: t.insights.title }} />
-        {/* Family / Shared Wallets */}
-        <Stack.Screen name="SharedWallets" component={withSuspense(SharedWalletsScreen)} options={{ title: t.sharedWallets.title }} />
         {/* Onboarding walkthrough — headerless full-screen */}
         <Stack.Screen name="Onboarding" component={withSuspense(OnboardingScreen)} options={{ headerShown: false }} />
         {/*

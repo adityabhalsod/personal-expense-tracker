@@ -547,26 +547,6 @@ const hi: TranslationKeys = {
     next: 'आगे',
   },
 
-  sharedWallets: {
-    title: 'साझा वॉलेट',
-    members: 'सदस्य',
-    addMember: 'सदस्य जोड़ें',
-    memberName: 'सदस्य का नाम',
-    role: 'भूमिका',
-    owner: 'मालिक',
-    editor: 'संपादक',
-    viewer: 'दर्शक',
-    admin: 'व्यवस्थापक',
-    member: 'सदस्य',
-    removeMember: 'सदस्य हटाएं',
-    removeMsg: 'इस सदस्य को साझा वॉलेट से हटाएं?',
-    removeConfirm: 'हटाएं',
-    noMembers: 'कोई सदस्य नहीं',
-    noMembersHint: 'खर्च साझा करने के लिए परिवार के सदस्य जोड़ें',
-    noShared: 'कोई साझा वॉलेट नहीं',
-    noSharedHint: 'पारिवारिक खर्चों को एक साथ ट्रैक करने के लिए साझा वॉलेट बनाएं',
-  },
-
   weeklyDigest: {
     title: 'साप्ताहिक सारांश',
     totalSpent: 'इस सप्ताह कुल खर्च',

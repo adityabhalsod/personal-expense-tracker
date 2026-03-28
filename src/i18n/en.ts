@@ -554,27 +554,6 @@ const en = {
     next: 'Next',
   },
 
-  // Shared/family wallets feature
-  sharedWallets: {
-    title: 'Shared Wallets',
-    members: 'Members',
-    addMember: 'Add Member',
-    memberName: 'Member Name',
-    role: 'Role',
-    owner: 'Owner',
-    admin: 'Admin',
-    member: 'Member',
-    editor: 'Editor',
-    viewer: 'Viewer',
-    removeMember: 'Remove Member',
-    removeMsg: 'Remove this member from shared wallet?',
-    removeConfirm: 'Remove',
-    noMembers: 'No Members Yet',
-    noMembersHint: 'Add family members to share expenses',
-    noShared: 'No Shared Wallets',
-    noSharedHint: 'Create a shared wallet to track family expenses together',
-  },
-
   // Weekly digest notification feature
   weeklyDigest: {
     title: 'Weekly Digest',

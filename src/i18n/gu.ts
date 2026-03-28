@@ -549,26 +549,6 @@ const gu: TranslationKeys = {
     next: 'આગળ',
   },
 
-  sharedWallets: {
-    title: 'શેર્ડ વૉલેટ',
-    members: 'સભ્યો',
-    addMember: 'સભ્ય ઉમેરો',
-    memberName: 'સભ્યનું નામ',
-    role: 'ભૂમિકા',
-    owner: 'માલિક',
-    editor: 'સંપાદક',
-    viewer: 'દર્શક',
-    admin: 'વ્યવસ્થાપક',
-    member: 'સભ્ય',
-    removeMember: 'સભ્ય દૂર કરો',
-    removeMsg: 'શેર્ડ વૉલેટમાંથી આ સભ્યને દૂર કરો?',
-    removeConfirm: 'દૂર કરો',
-    noMembers: 'કોઈ સભ્ય નથી',
-    noMembersHint: 'ખર્ચ શેર કરવા પરિવારના સભ્યો ઉમેરો',
-    noShared: 'કોઈ શેર્ડ વૉલેટ નથી',
-    noSharedHint: 'પરિવારના ખર્ચા સાથે ટ્રેક કરવા શેર્ડ વૉલેટ બનાવો',
-  },
-
   weeklyDigest: {
     title: 'સાપ્તાહિક સારાંશ',
     totalSpent: 'આ અઠવાડિયે કુલ ખર્ચ',

@@ -237,7 +237,7 @@ expense-tracker/
 │   │   ├── ExpensesScreen       #   Filtered expense list (All/Today/Week/Month)
 │   │   ├── AnalyticsScreen      #   Charts, stacked bars, spending flow diagrams
 │   │   ├── WalletScreen         #   Balance overview and wallet management
-│   │   ├── SettingsScreen       #   Theme, language, accessibility, security
+│   │   ├── SettingsScreen       #   Theme, language, security
 │   │   ├── AddExpenseScreen     #   Add/edit expense with receipt attachments
 │   │   ├── AddIncomeScreen      #   Add/edit income with source selection
 │   │   ├── IncomeListScreen     #   Income history with sorting
@@ -260,7 +260,7 @@ expense-tracker/
 │   │   └── WalletSetupScreen    #   Create/edit wallet (payment source)
 │   ├── services/            # Recurring expenses, notifications, weekly digest
 │   ├── store/               # Zustand global state (granular selectors)
-│   ├── theme/               # Light, dark, and high-contrast theme definitions
+│   ├── theme/               # Light and dark theme definitions
 │   ├── types/               # TypeScript interfaces
 │   └── utils/               # Formatters, helpers, export service, encryption
 ├── android/                 # Native Android project

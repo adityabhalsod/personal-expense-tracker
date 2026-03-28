@@ -120,6 +120,7 @@ export const checkBudgetNotifications = async (): Promise<void> => {
     // Build query with optional wallet filter
     let query = `SELECT COALESCE(SUM(amount), 0) as total FROM expenses
        WHERE category = ? AND date >= ? AND date <= ?`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any[] = [category.name, startDate, endDate];
 
     // Filter by wallet if budget is wallet-specific
@@ -199,6 +200,7 @@ export const scheduleWeeklyDigest = async (): Promise<void> => {
       data: { type: 'weekly_digest' },
     },
     trigger: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: 'weekly' as any,
       weekday: 1, // Sunday
       hour: 9,

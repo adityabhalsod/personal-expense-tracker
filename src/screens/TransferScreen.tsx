@@ -19,6 +19,7 @@ import { formatAmountInput, formatCurrency } from '../utils/helpers';
 const TransferScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
 
   // Store subscriptions
@@ -45,6 +46,7 @@ const TransferScreen = () => {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter destination options — exclude the currently selected source wallet
@@ -106,7 +108,7 @@ const TransferScreen = () => {
         currency: settings.defaultCurrency,
       });
       navigation.goBack();
-    } catch (error) {
+    } catch {
       Alert.alert(t.common.error, t.transfer.saveFailed);
     } finally {
       setLoading(false);
@@ -140,6 +142,7 @@ const TransferScreen = () => {
           >
             {/* Wallet icon */}
             <View style={[styles.walletIconWrap, { backgroundColor: w.color + '20' }]}>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               <MaterialCommunityIcons name={w.iconName as any} size={24} color={w.color} />
             </View>
             {/* Wallet name and balance */}

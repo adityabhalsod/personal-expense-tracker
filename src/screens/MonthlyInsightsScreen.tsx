@@ -177,6 +177,7 @@ const MonthlyInsightsScreen = () => {
             <View style={styles.insightRow}>
               {/* Insight icon with tinted background */}
               <View style={[styles.insightIcon, { backgroundColor: insight.color + '15' }]}>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <MaterialCommunityIcons name={insight.icon as any} size={24} color={insight.color} />
               </View>
               <View style={styles.insightContent}>

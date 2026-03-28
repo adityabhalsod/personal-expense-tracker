@@ -2,7 +2,7 @@
 // Provides edit and delete actions with confirmation dialog
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
@@ -17,7 +17,9 @@ import { Receipt } from '../types';
 const ExpenseDetailScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const route = useRoute<any>();
   const { expenseId } = route.params; // ID of the expense to display
 
@@ -78,6 +80,7 @@ const ExpenseDetailScreen = () => {
         {/* Category icon circle */}
         <View style={[styles.iconCircle, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
           <MaterialCommunityIcons
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             name={(category?.icon || 'help-circle') as any}
             size={32}
             color="#FFFFFF"
@@ -182,8 +185,10 @@ const ExpenseDetailScreen = () => {
 };
 
 // Reusable row component for displaying a labeled detail with icon
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DetailRow = ({ icon, label, value, theme }: { icon: string; label: string; value: string; theme: any }) => (
   <View style={styles.detailRow}>
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
     <MaterialCommunityIcons name={icon as any} size={20} color={theme.colors.primary} />
     <View style={styles.detailInfo}>
       <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>{label}</Text>

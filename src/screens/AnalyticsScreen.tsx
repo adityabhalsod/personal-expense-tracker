@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { PieChart, BarChart, LineChart, StackedBarChart } from 'react-native-chart-kit';
-import Svg, { Rect, Text as SvgText, Path, Line } from 'react-native-svg';
+import Svg, { Rect, Text as SvgText, Path } from 'react-native-svg';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
 import { useAppStore, selectCategories } from '../store';
@@ -39,7 +39,9 @@ const AnalyticsScreen = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('monthly'); // Selected time period
   const [loading, setLoading] = useState(true); // Data loading indicator
   const [totalExpenses, setTotalExpenses] = useState(0); // Total spending in period
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [categoryData, setCategoryData] = useState<any[]>([]); // Category breakdown data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [dailyData, setDailyData] = useState<any[]>([]); // Daily trend data
   const [expenseCount, setExpenseCount] = useState(0); // Number of transactions
   const [totalIncome, setTotalIncome] = useState(0); // Total income in period
@@ -423,6 +425,7 @@ const AnalyticsScreen = () => {
                   <View key={index} style={styles.catRow}>
                     {/* Category icon */}
                     <View style={[styles.catIcon, { backgroundColor: cat.color + '20' }]}>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <MaterialCommunityIcons name={cat.icon as any} size={20} color={cat.color} />
                     </View>
                     {/* Category name and transaction count */}

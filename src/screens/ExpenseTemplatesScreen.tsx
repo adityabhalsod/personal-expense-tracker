@@ -10,7 +10,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
-import { useAppStore, selectExpenseTemplates, selectCategories, selectSettings } from '../store';
+import { useAppStore, selectExpenseTemplates, selectCategories } from '../store';
 import { formatCurrency } from '../utils/helpers';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -31,10 +31,10 @@ const TEMPLATE_COLORS = [
 const ExpenseTemplatesScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const templates = useAppStore(selectExpenseTemplates);
   const categories = useAppStore(selectCategories);
-  const settings = useAppStore(selectSettings);
   const addExpenseTemplate = useAppStore((s) => s.addExpenseTemplate);
   const applyTemplate = useAppStore((s) => s.useExpenseTemplate);
   const deleteExpenseTemplate = useAppStore((s) => s.deleteExpenseTemplate);
@@ -131,6 +131,7 @@ const ExpenseTemplatesScreen = () => {
                   <View style={styles.templateRow}>
                     {/* Template icon with colored background */}
                     <View style={[styles.templateIcon, { backgroundColor: template.color + '20' }]}>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <MaterialCommunityIcons name={template.icon as any} size={24} color={template.color} />
                     </View>
                     <View style={styles.templateInfo}>
@@ -204,6 +205,7 @@ const ExpenseTemplatesScreen = () => {
                     ]}
                     onPress={() => setSelectedCategory(cat.name)}
                   >
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <MaterialCommunityIcons name={cat.icon as any} size={16} color={selectedCategory === cat.name ? cat.color : theme.colors.textSecondary} />
                     <Text style={[styles.categoryChipText, { color: selectedCategory === cat.name ? cat.color : theme.colors.text }]}>{cat.name}</Text>
                   </TouchableOpacity>
@@ -228,6 +230,7 @@ const ExpenseTemplatesScreen = () => {
                     style={[styles.iconOption, selectedIcon === icon && { backgroundColor: selectedColor + '20', borderColor: selectedColor }]}
                     onPress={() => setSelectedIcon(icon)}
                   >
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <MaterialCommunityIcons name={icon as any} size={22} color={selectedIcon === icon ? selectedColor : theme.colors.textSecondary} />
                   </TouchableOpacity>
                 ))}

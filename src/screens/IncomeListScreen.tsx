@@ -6,7 +6,6 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
 import { useAppStore, selectIncome, selectWallets, selectSettings } from '../store';
@@ -19,6 +18,7 @@ import { INCOME_SOURCES } from '../constants';
 const IncomeListScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
 
   // Store subscriptions via selectors
@@ -34,6 +34,7 @@ const IncomeListScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadIncome(100);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
@@ -90,6 +91,7 @@ const IncomeListScreen = () => {
           <View style={styles.incomeRow}>
             {/* Source icon circle */}
             <View style={[styles.sourceIcon, { backgroundColor: sourceInfo.color + '20' }]}>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               <MaterialCommunityIcons name={sourceInfo.icon as any} size={24} color={sourceInfo.color} />
             </View>
             {/* Source name, wallet, and date */}

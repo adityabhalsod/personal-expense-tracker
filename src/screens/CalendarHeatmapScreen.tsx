@@ -50,7 +50,7 @@ const CalendarHeatmapScreen = () => {
     let max = 0;
 
     // Convert array results to a lookup map keyed by date string
-    totals.forEach((row: any) => {
+    totals.forEach((row: { date: string; total: number }) => {
       map.set(row.date, row.total);
       total += row.total;
       if (row.total > max) max = row.total;

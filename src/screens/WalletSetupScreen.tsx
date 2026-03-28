@@ -41,7 +41,9 @@ const COLOR_OPTIONS = [
 const WalletSetupScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const route = useRoute<any>();
   const walletId = route.params?.walletId; // Null for new wallet, ID for editing
 
@@ -54,6 +56,7 @@ const WalletSetupScreen = () => {
   // Find existing wallet when editing — only recompute when walletId changes, not on every wallets array update
   const existingWallet = useMemo(
     () => walletId ? wallets.find(w => w.id === walletId) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [walletId]
   );
 
@@ -96,6 +99,7 @@ const WalletSetupScreen = () => {
       setIsDefault(existingWallet.isDefault);
       navigation.setOptions({ title: t.walletSetup.updateWallet });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingWallet]);
 
   // Validate and save wallet data
@@ -150,6 +154,7 @@ const WalletSetupScreen = () => {
     }
     // Navigate back only after successful save (outside try/catch to avoid false error)
     navigation.goBack();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, type, initialBalance, bankName, nickname, iconName, color, isDefault, walletId, existingWallet, settings, addWallet, updateWallet]);
 
   return (
@@ -177,6 +182,7 @@ const WalletSetupScreen = () => {
                 }}
               >
                 <MaterialCommunityIcons
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   name={wt.icon as any}
                   size={20}
                   color={type === wt.type ? theme.colors.primary : theme.colors.textSecondary}
@@ -270,6 +276,7 @@ const WalletSetupScreen = () => {
                 onPress={() => setIconName(icon)}
               >
                 <MaterialCommunityIcons
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   name={icon as any}
                   size={24}
                   color={iconName === icon ? color : theme.colors.textSecondary}

@@ -25,6 +25,7 @@ const STEPS = [
 const OnboardingScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,6 +53,7 @@ const OnboardingScreen = () => {
   };
 
   // Track current visible page via scroll position
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index || 0);
@@ -63,6 +65,7 @@ const OnboardingScreen = () => {
     <View style={[styles.step, { width: SCREEN_WIDTH }]}>
       {/* Large circular icon background */}
       <View style={[styles.iconContainer, { backgroundColor: item.color + '15' }]}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <MaterialCommunityIcons name={item.icon as any} size={80} color={item.color} />
       </View>
       <Text style={[styles.title, { color: theme.colors.text }]}>{item.title}</Text>

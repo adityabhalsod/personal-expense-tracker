@@ -10,7 +10,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
-import { useAppStore, selectWallets, selectCurrentWallet, selectIncome, selectSettings } from '../store';
+import { useAppStore, selectWallets, selectIncome, selectSettings } from '../store';
 import { RecurringFrequency } from '../types';
 import { format, parse } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -21,14 +21,15 @@ import { INCOME_SOURCES } from '../constants';
 const AddIncomeScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const route = useRoute<any>();
   // Null for new income, ID for editing existing
   const incomeId = route.params?.incomeId;
 
   // Subscribe to store slices via selectors
   const wallets = useAppStore(selectWallets);
-  const currentWallet = useAppStore(selectCurrentWallet);
   const incomeRecords = useAppStore(selectIncome);
   const settings = useAppStore(selectSettings);
   const addIncome = useAppStore((s) => s.addIncome);
@@ -69,6 +70,7 @@ const AddIncomeScreen = () => {
       const defaultWallet = wallets.find(w => w.isDefault) || wallets[0];
       setSelectedWalletId(defaultWallet.id);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallets.length]);
 
   // Pre-fill form when editing existing income
@@ -87,6 +89,7 @@ const AddIncomeScreen = () => {
         navigation.setOptions({ title: t.income.editTitle });
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [incomeId]);
 
   // Validate and submit the income form
@@ -119,7 +122,7 @@ const AddIncomeScreen = () => {
         await addIncome(incomeData);
       }
       navigation.goBack();
-    } catch (error) {
+    } catch {
       Alert.alert(t.common.error, t.income.saveFailed);
     } finally {
       setLoading(false);
@@ -183,11 +186,13 @@ const AddIncomeScreen = () => {
                 ]}
                 onPress={() => setSelectedSource(src.value)}
               >
+                {/* eslint-disable @typescript-eslint/no-explicit-any */}
                 <MaterialCommunityIcons
                   name={src.icon as any}
                   size={22}
                   color={selectedSource === src.value ? src.color : theme.colors.textSecondary}
                 />
+                {/* eslint-enable @typescript-eslint/no-explicit-any */}
                 <Text style={[
                   styles.sourceChipText,
                   { color: selectedSource === src.value ? src.color : theme.colors.text },
@@ -239,11 +244,13 @@ const AddIncomeScreen = () => {
                   ]}
                   onPress={() => setSelectedWalletId(w.id)}
                 >
+                  {/* eslint-disable @typescript-eslint/no-explicit-any */}
                   <MaterialCommunityIcons
                     name={w.iconName as any}
                     size={18}
                     color={selectedWalletId === w.id ? w.color : theme.colors.textSecondary}
                   />
+                  {/* eslint-enable @typescript-eslint/no-explicit-any */}
                   <Text style={[
                     styles.walletChipText,
                     { color: selectedWalletId === w.id ? w.color : theme.colors.text },

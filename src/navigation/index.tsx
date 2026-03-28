@@ -50,7 +50,9 @@ const LazyFallback = () => (
 );
 
 // Wrap a lazy component with Suspense for safe rendering
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType<any>>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const SuspenseWrapper = (props: any) => (
     <Suspense fallback={<LazyFallback />}>
       <Component {...props} />
@@ -187,6 +189,7 @@ const AppNavigator = ({ initialRoute = 'MainTabs' }: { initialRoute?: string }) 
   return (
     <NavigationContainer linking={linking}>
       <Stack.Navigator
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         initialRouteName={initialRoute as any}
         screenOptions={{
           headerStyle: {

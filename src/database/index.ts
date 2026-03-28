@@ -7,6 +7,81 @@ import { DEFAULT_CATEGORIES } from '../constants';
 import * as Crypto from 'expo-crypto';
 import { encryptData, decryptData } from '../utils/encryption';
 
+// SQLite bind parameter type for query values
+type BindValue = string | number | null;
+
+// Raw category row from SQLite (isDefault stored as 0/1 integer)
+interface RawCategoryRow {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault: number;
+  budget: number | null;
+  order: number;
+}
+
+// Raw expense row from SQLite (booleans as 0/1, tags as JSON string)
+interface RawExpenseRow {
+  id: string;
+  amount: number;
+  category: string;
+  subcategory: string | null;
+  date: string;
+  paymentMethod: string;
+  notes: string | null;
+  tags: string;
+  currency: string;
+  isRecurring: number;
+  recurringFrequency: string | null;
+  recurringEndDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  walletId: string | null;
+}
+
+// Raw wallet row from SQLite (isDefault stored as 0/1 integer)
+interface RawWalletRow {
+  id: string;
+  name: string;
+  type: string;
+  initialBalance: number;
+  currentBalance: number;
+  currency: string;
+  bankName: string | null;
+  nickname: string | null;
+  iconName: string;
+  color: string;
+  isDefault: number;
+  metadata: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Raw income row from SQLite (isRecurring stored as 0/1 integer)
+interface RawIncomeRow {
+  id: string;
+  amount: number;
+  source: string;
+  date: string;
+  notes: string | null;
+  walletId: string;
+  currency: string;
+  isRecurring: number;
+  recurringFrequency: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Raw user streak row from SQLite
+interface RawUserStreakRow {
+  id: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+  totalDaysActive: number;
+}
+
 // Singleton database instance shared across the app
 let db: SQLite.SQLiteDatabase | null = null;
 // Promise lock to prevent concurrent initialization races
@@ -335,11 +410,12 @@ const initializeDatabase = async (database: SQLite.SQLiteDatabase): Promise<void
 // Retrieve all categories sorted by their display order
 export const getAllCategories = async (): Promise<Category[]> => {
   const database = await getDatabase();
-  const rows = await database.getAllAsync<any>('SELECT * FROM categories ORDER BY "order" ASC');
+  const rows = await database.getAllAsync<RawCategoryRow>('SELECT * FROM categories ORDER BY "order" ASC');
   // Map raw rows to typed Category objects
   return rows.map(row => ({
     ...row,
     isDefault: row.isDefault === 1,
+    budget: row.budget ?? undefined,
   }));
 };
 
@@ -359,7 +435,7 @@ export const updateCategory = async (id: string, category: Partial<Category>): P
   const database = await getDatabase();
   // Build SET clause dynamically from provided fields
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: BindValue[] = [];
 
   if (category.name !== undefined) { fields.push('name = ?'); values.push(category.name); }
   if (category.icon !== undefined) { fields.push('icon = ?'); values.push(category.icon); }
@@ -403,7 +479,7 @@ export const deleteMultipleCategories = async (ids: string[]): Promise<void> => 
 export const getAllExpenses = async (limit?: number, offset?: number): Promise<Expense[]> => {
   const database = await getDatabase();
   let query = 'SELECT * FROM expenses ORDER BY date DESC, createdAt DESC';
-  const params: any[] = [];
+  const params: (string | number)[] = [];
 
   // Apply pagination if limit is specified
   if (limit) {
@@ -415,14 +491,14 @@ export const getAllExpenses = async (limit?: number, offset?: number): Promise<E
     }
   }
 
-  const rows = await database.getAllAsync<any>(query, params);
+  const rows = await database.getAllAsync<RawExpenseRow>(query, params);
   return rows.map(parseExpenseRow); // Parse each row into typed Expense
 };
 
 // Get expenses within a specific date range for reports and analytics
 export const getExpensesByDateRange = async (startDate: string, endDate: string): Promise<Expense[]> => {
   const database = await getDatabase();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<RawExpenseRow>(
     'SELECT * FROM expenses WHERE date >= ? AND date <= ? ORDER BY date DESC',
     [startDate, endDate]
   );
@@ -432,7 +508,7 @@ export const getExpensesByDateRange = async (startDate: string, endDate: string)
 // Get expenses filtered by category name
 export const getExpensesByCategory = async (category: string): Promise<Expense[]> => {
   const database = await getDatabase();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<RawExpenseRow>(
     'SELECT * FROM expenses WHERE category = ? ORDER BY date DESC',
     [category]
   );
@@ -443,7 +519,7 @@ export const getExpensesByCategory = async (category: string): Promise<Expense[]
 export const searchExpenses = async (query: string): Promise<Expense[]> => {
   const database = await getDatabase();
   const searchTerm = `%${query}%`; // Wildcard match for LIKE queries
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<RawExpenseRow>(
     'SELECT * FROM expenses WHERE notes LIKE ? OR category LIKE ? OR tags LIKE ? ORDER BY date DESC',
     [searchTerm, searchTerm, searchTerm]
   );
@@ -485,11 +561,11 @@ export const updateExpense = async (id: string, updates: Partial<Expense>): Prom
   const now = new Date().toISOString();
 
   // Fetch existing expense to calculate wallet balance difference
-  const existing = await database.getFirstAsync<any>('SELECT * FROM expenses WHERE id = ?', [id]);
+  const existing = await database.getFirstAsync<RawExpenseRow>('SELECT * FROM expenses WHERE id = ?', [id]);
   if (!existing) return;
 
   const fields: string[] = ['updatedAt = ?'];
-  const values: any[] = [now];
+  const values: BindValue[] = [now];
 
   // Build dynamic update query from provided fields
   if (updates.amount !== undefined) { fields.push('amount = ?'); values.push(updates.amount); }
@@ -518,7 +594,7 @@ export const updateExpense = async (id: string, updates: Partial<Expense>): Prom
 export const deleteExpense = async (id: string): Promise<void> => {
   const database = await getDatabase();
   // Fetch expense to restore wallet balance before deletion
-  const existing = await database.getFirstAsync<any>('SELECT * FROM expenses WHERE id = ?', [id]);
+  const existing = await database.getFirstAsync<RawExpenseRow>('SELECT * FROM expenses WHERE id = ?', [id]);
   if (!existing) return;
 
   await database.runAsync('DELETE FROM expenses WHERE id = ?', [id]);
@@ -541,7 +617,7 @@ export const deleteMultipleExpenses = async (ids: string[]): Promise<void> => {
   const placeholders = ids.map(() => '?').join(',');
 
   // Fetch all targeted expenses to restore wallet balances
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<{ id: string; amount: number; walletId: string | null }>(
     `SELECT id, amount, walletId FROM expenses WHERE id IN (${placeholders})`, ids
   );
 
@@ -562,7 +638,7 @@ export const deleteMultipleExpenses = async (ids: string[]): Promise<void> => {
 // Get a single expense by its ID
 export const getExpenseById = async (id: string): Promise<Expense | null> => {
   const database = await getDatabase();
-  const row = await database.getFirstAsync<any>('SELECT * FROM expenses WHERE id = ?', [id]);
+  const row = await database.getFirstAsync<RawExpenseRow>('SELECT * FROM expenses WHERE id = ?', [id]);
   return row ? parseExpenseRow(row) : null;
 };
 
@@ -579,12 +655,12 @@ export const getExpenseCount = async (): Promise<number> => {
 export const getDefaultWallet = async (): Promise<Wallet | null> => {
   const database = await getDatabase();
   // Try to find the wallet marked as default first
-  let row = await database.getFirstAsync<any>(
+  let row = await database.getFirstAsync<RawWalletRow>(
     'SELECT * FROM wallets WHERE isDefault = 1 LIMIT 1'
   );
   // Fall back to the first created wallet if no default is set
   if (!row) {
-    row = await database.getFirstAsync<any>(
+    row = await database.getFirstAsync<RawWalletRow>(
       'SELECT * FROM wallets ORDER BY createdAt ASC LIMIT 1'
     );
   }
@@ -594,7 +670,7 @@ export const getDefaultWallet = async (): Promise<Wallet | null> => {
 // Get all wallets ordered by default first, then by name
 export const getAllWallets = async (): Promise<Wallet[]> => {
   const database = await getDatabase();
-  const rows = await database.getAllAsync<any>(
+  const rows = await database.getAllAsync<RawWalletRow>(
     'SELECT * FROM wallets ORDER BY isDefault DESC, name ASC'
   );
   // Decrypt sensitive fields for each wallet before returning
@@ -633,7 +709,7 @@ export const updateWallet = async (id: string, updates: Partial<Wallet>): Promis
   const database = await getDatabase();
   const now = new Date().toISOString();
   const fields: string[] = ['updatedAt = ?'];
-  const values: any[] = [now];
+  const values: BindValue[] = [now];
 
   // Build dynamic SET clause from provided fields
   if (updates.name !== undefined) { fields.push('name = ?'); values.push(updates.name); }
@@ -694,7 +770,7 @@ export const addBudget = async (budget: Omit<Budget, 'id'>): Promise<Budget> => 
 export const updateBudget = async (id: string, updates: Partial<Budget>): Promise<void> => {
   const database = await getDatabase();
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: BindValue[] = [];
 
   if (updates.amount !== undefined) { fields.push('amount = ?'); values.push(updates.amount); }
   if (updates.notifyAt !== undefined) { fields.push('notifyAt = ?'); values.push(updates.notifyAt); }
@@ -719,7 +795,7 @@ export const deleteBudget = async (id: string): Promise<void> => {
 export const getAllIncome = async (limit?: number, offset?: number): Promise<Income[]> => {
   const database = await getDatabase();
   let query = 'SELECT * FROM income ORDER BY date DESC, createdAt DESC';
-  const params: any[] = [];
+  const params: (string | number)[] = [];
   // Apply pagination if limit is specified
   if (limit) {
     query += ' LIMIT ?';
@@ -729,7 +805,7 @@ export const getAllIncome = async (limit?: number, offset?: number): Promise<Inc
       params.push(offset);
     }
   }
-  const rows = await database.getAllAsync<any>(query, params);
+  const rows = await database.getAllAsync<RawIncomeRow>(query, params);
   return rows.map(parseIncomeRow);
 };
 
@@ -760,10 +836,10 @@ export const updateIncome = async (id: string, updates: Partial<Income>): Promis
   const database = await getDatabase();
   const now = new Date().toISOString();
   // Fetch existing income to calculate wallet balance difference
-  const existing = await database.getFirstAsync<any>('SELECT * FROM income WHERE id = ?', [id]);
+  const existing = await database.getFirstAsync<RawIncomeRow>('SELECT * FROM income WHERE id = ?', [id]);
   if (!existing) return;
   const fields: string[] = ['updatedAt = ?'];
-  const values: any[] = [now];
+  const values: BindValue[] = [now];
   if (updates.amount !== undefined) { fields.push('amount = ?'); values.push(updates.amount); }
   if (updates.source !== undefined) { fields.push('source = ?'); values.push(updates.source); }
   if (updates.date !== undefined) { fields.push('date = ?'); values.push(updates.date); }
@@ -785,7 +861,7 @@ export const updateIncome = async (id: string, updates: Partial<Income>): Promis
 // Delete an income record and reverse the wallet credit
 export const deleteIncome = async (id: string): Promise<void> => {
   const database = await getDatabase();
-  const existing = await database.getFirstAsync<any>('SELECT * FROM income WHERE id = ?', [id]);
+  const existing = await database.getFirstAsync<RawIncomeRow>('SELECT * FROM income WHERE id = ?', [id]);
   if (!existing) return;
   await database.runAsync('DELETE FROM income WHERE id = ?', [id]);
   // Reverse the income credit from the wallet
@@ -801,7 +877,7 @@ export const deleteIncome = async (id: string): Promise<void> => {
 // Get a single income record by ID
 export const getIncomeById = async (id: string): Promise<Income | null> => {
   const database = await getDatabase();
-  const row = await database.getFirstAsync<any>('SELECT * FROM income WHERE id = ?', [id]);
+  const row = await database.getFirstAsync<RawIncomeRow>('SELECT * FROM income WHERE id = ?', [id]);
   return row ? parseIncomeRow(row) : null;
 };
 
@@ -811,7 +887,7 @@ export const getIncomeById = async (id: string): Promise<Income | null> => {
 export const getAllTransfers = async (limit?: number): Promise<Transfer[]> => {
   const database = await getDatabase();
   let query = 'SELECT * FROM transfers ORDER BY date DESC, createdAt DESC';
-  const params: any[] = [];
+  const params: (string | number)[] = [];
   if (limit) {
     query += ' LIMIT ?';
     params.push(limit);
@@ -846,7 +922,7 @@ export const addTransfer = async (transfer: Omit<Transfer, 'id' | 'createdAt'>):
 // Delete a transfer and reverse the wallet adjustments
 export const deleteTransfer = async (id: string): Promise<void> => {
   const database = await getDatabase();
-  const existing = await database.getFirstAsync<any>('SELECT * FROM transfers WHERE id = ?', [id]);
+  const existing = await database.getFirstAsync<Transfer>('SELECT * FROM transfers WHERE id = ?', [id]);
   if (!existing) return;
   await database.runAsync('DELETE FROM transfers WHERE id = ?', [id]);
   const now = new Date().toISOString();
@@ -944,19 +1020,19 @@ export const getMonthlyTotals = async (year: number): Promise<{ month: number; t
 // Export all data as a JSON object for backup purposes
 export const exportAllData = async (): Promise<{ expenses: Expense[]; categories: Category[]; wallets: Wallet[]; budgets: Budget[]; income: Income[]; transfers: Transfer[]; savingsGoals: SavingsGoal[]; templates: ExpenseTemplate[] }> => {
   const database = await getDatabase();
-  const expenses = (await database.getAllAsync<any>('SELECT * FROM expenses ORDER BY date DESC')).map(parseExpenseRow);
-  const categories = await database.getAllAsync<any>('SELECT * FROM categories ORDER BY "order" ASC');
-  const walletRows = await database.getAllAsync<any>('SELECT * FROM wallets ORDER BY isDefault DESC, name ASC');
+  const expenses = (await database.getAllAsync<RawExpenseRow>('SELECT * FROM expenses ORDER BY date DESC')).map(parseExpenseRow);
+  const categories = await database.getAllAsync<RawCategoryRow>('SELECT * FROM categories ORDER BY "order" ASC');
+  const walletRows = await database.getAllAsync<RawWalletRow>('SELECT * FROM wallets ORDER BY isDefault DESC, name ASC');
   const wallets: Wallet[] = [];
   for (const row of walletRows) {
     wallets.push(await parseWalletRow(row));
   }
   const budgets = await database.getAllAsync<Budget>('SELECT * FROM budgets');
-  const income = (await database.getAllAsync<any>('SELECT * FROM income ORDER BY date DESC')).map(parseIncomeRow);
+  const income = (await database.getAllAsync<RawIncomeRow>('SELECT * FROM income ORDER BY date DESC')).map(parseIncomeRow);
   const transfers = await database.getAllAsync<Transfer>('SELECT * FROM transfers ORDER BY date DESC');
   const savingsGoals = await database.getAllAsync<SavingsGoal>('SELECT * FROM savings_goals ORDER BY createdAt DESC');
   const templates = await database.getAllAsync<ExpenseTemplate>('SELECT * FROM expense_templates ORDER BY usageCount DESC');
-  return { expenses, categories: categories.map((c: any) => ({ ...c, isDefault: c.isDefault === 1 })), wallets, budgets, income, transfers, savingsGoals, templates };
+  return { expenses, categories: categories.map((c: RawCategoryRow) => ({ ...c, isDefault: c.isDefault === 1, budget: c.budget ?? undefined })), wallets, budgets, income, transfers, savingsGoals, templates };
 };
 
 // ==================== DATABASE RESET FUNCTIONS ====================
@@ -1007,23 +1083,33 @@ export const resetDatabase = async (): Promise<void> => {
 // ==================== HELPER FUNCTIONS ====================
 
 // Convert a raw database row to a typed Wallet object with decrypted fields
-const parseWalletRow = async (row: any): Promise<Wallet> => ({
+const parseWalletRow = async (row: RawWalletRow): Promise<Wallet> => ({
   ...row,
+  type: row.type as Wallet['type'],
+  bankName: row.bankName ?? undefined,
+  nickname: row.nickname ?? undefined,
   isDefault: row.isDefault === 1,
   metadata: row.metadata ? await decryptData(row.metadata) : undefined,
 });
 
 // Convert a raw database row to a typed Expense object
-const parseExpenseRow = (row: any): Expense => ({
+const parseExpenseRow = (row: RawExpenseRow): Expense => ({
   ...row,
+  subcategory: row.subcategory ?? undefined,
+  notes: row.notes ?? undefined,
   tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags || [], // Parse JSON tags string
   isRecurring: row.isRecurring === 1, // Convert SQLite integer to boolean
+  recurringFrequency: (row.recurringFrequency ?? undefined) as Expense['recurringFrequency'],
+  recurringEndDate: row.recurringEndDate ?? undefined,
+  walletId: row.walletId ?? '',
 });
 
 // Convert a raw database row to a typed Income object
-const parseIncomeRow = (row: any): Income => ({
+const parseIncomeRow = (row: RawIncomeRow): Income => ({
   ...row,
+  notes: row.notes ?? undefined,
   isRecurring: row.isRecurring === 1, // Convert SQLite integer to boolean
+  recurringFrequency: (row.recurringFrequency ?? undefined) as Income['recurringFrequency'],
 });
 
 // ==================== RECEIPT OPERATIONS ====================
@@ -1086,7 +1172,7 @@ export const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal
   const database = await getDatabase();
   const now = new Date().toISOString();
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: BindValue[] = [];
   // Build dynamic SET clause from provided updates
   if (updates.name !== undefined) { fields.push('name = ?'); values.push(updates.name); }
   if (updates.targetAmount !== undefined) { fields.push('targetAmount = ?'); values.push(updates.targetAmount); }
@@ -1142,7 +1228,7 @@ export const deleteExpenseTemplate = async (id: string): Promise<void> => {
 // Get the current user streak data
 export const getUserStreak = async (): Promise<{ currentStreak: number; longestStreak: number; lastActiveDate: string | null; totalDaysActive: number }> => {
   const database = await getDatabase();
-  const row = await database.getFirstAsync<any>('SELECT * FROM user_streaks WHERE id = 1');
+  const row = await database.getFirstAsync<RawUserStreakRow>('SELECT * FROM user_streaks WHERE id = 1');
   return {
     currentStreak: row?.currentStreak || 0,
     longestStreak: row?.longestStreak || 0,
@@ -1154,7 +1240,7 @@ export const getUserStreak = async (): Promise<{ currentStreak: number; longestS
 // Update the user streak after logging activity (expense or income)
 export const updateUserStreak = async (today: string): Promise<{ currentStreak: number; longestStreak: number; totalDaysActive: number }> => {
   const database = await getDatabase();
-  const row = await database.getFirstAsync<any>('SELECT * FROM user_streaks WHERE id = 1');
+  const row = await database.getFirstAsync<RawUserStreakRow>('SELECT * FROM user_streaks WHERE id = 1');
   let current = row?.currentStreak || 0;
   let longest = row?.longestStreak || 0;
   let totalDays = row?.totalDaysActive || 0;

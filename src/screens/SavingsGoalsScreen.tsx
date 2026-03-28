@@ -9,7 +9,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { useLanguage } from '../i18n';
-import { useAppStore, selectSavingsGoals, selectSettings } from '../store';
+import { useAppStore, selectSavingsGoals } from '../store';
 import { formatCurrency } from '../utils/helpers';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -31,7 +31,6 @@ const SavingsGoalsScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const goals = useAppStore(selectSavingsGoals);
-  const settings = useAppStore(selectSettings);
   const addSavingsGoal = useAppStore((s) => s.addSavingsGoal);
   const updateSavingsGoal = useAppStore((s) => s.updateSavingsGoal);
   const deleteSavingsGoal = useAppStore((s) => s.deleteSavingsGoal);
@@ -165,6 +164,7 @@ const SavingsGoalsScreen = () => {
                   <View style={styles.goalHeader}>
                     {/* Goal icon with colored background */}
                     <View style={[styles.goalIcon, { backgroundColor: goal.color + '20' }]}>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <MaterialCommunityIcons name={goal.icon as any} size={28} color={goal.color} />
                     </View>
                     <View style={styles.goalInfo}>
@@ -252,6 +252,7 @@ const SavingsGoalsScreen = () => {
                   style={[styles.iconOption, selectedIcon === icon && { backgroundColor: selectedColor + '20', borderColor: selectedColor }]}
                   onPress={() => setSelectedIcon(icon)}
                 >
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <MaterialCommunityIcons name={icon as any} size={24} color={selectedIcon === icon ? selectedColor : theme.colors.textSecondary} />
                 </TouchableOpacity>
               ))}

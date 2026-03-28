@@ -85,6 +85,7 @@ const StreaksScreen = () => {
               {/* Badge icon — colored when earned, muted when locked */}
               <View style={[styles.badgeIcon, { backgroundColor: earned ? def.color + '20' : theme.colors.inputBackground }]}>
                 <MaterialCommunityIcons
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   name={def.icon as any}
                   size={28}
                   color={earned ? def.color : theme.colors.textTertiary}

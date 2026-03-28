@@ -10,22 +10,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme';
-import { useAppStore, selectExpenses, selectCurrentWallet, selectWallets, selectCategories, selectIsLoading, selectIncome } from '../store';
+import { useAppStore, selectExpenses, selectWallets, selectCategories, selectIncome } from '../store';
 import Card from '../components/common/Card';
 import { formatCurrency, formatRelativeDate } from '../utils/helpers';
 import { useLanguage } from '../i18n';
 
 const HomeScreen = () => {
   const { theme } = useTheme();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const { t } = useLanguage();
 
   // Subscribe to individual store slices via selectors to prevent full-store re-renders
   const expenses = useAppStore(selectExpenses);
-  const currentWallet = useAppStore(selectCurrentWallet);
   const wallets = useAppStore(selectWallets);
   const categories = useAppStore(selectCategories);
-  const isLoading = useAppStore(selectIsLoading);
   const income = useAppStore(selectIncome); // Income records for net savings calculation
   const initialize = useAppStore((s) => s.initialize);
   const loadExpenses = useAppStore((s) => s.loadExpenses);
@@ -80,6 +79,7 @@ const HomeScreen = () => {
       loadCurrentWallet();
       loadWallets();
       loadIncome(50);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
@@ -192,6 +192,7 @@ const HomeScreen = () => {
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.miniWallets}>
                     {wallets.map((w) => (
                       <View key={w.id} style={[styles.miniWallet, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <MaterialCommunityIcons name={w.iconName as any} size={16} color="#FFF" />
                         <Text style={styles.miniWalletName} numberOfLines={1}>{w.nickname || w.name}</Text>
                         <Text style={styles.miniWalletBal}>{formatCurrency(w.currentBalance, w.currency)}</Text>
@@ -469,6 +470,7 @@ const HomeScreen = () => {
                     )}
                     {/* Category icon circle */}
                     <View style={[styles.expenseIcon, { backgroundColor: catInfo.color + '20' }]}>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <MaterialCommunityIcons name={catInfo.icon as any} size={24} color={catInfo.color} />
                     </View>
                     {/* Expense details (category name and date) */}

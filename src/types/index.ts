@@ -199,8 +199,6 @@ export interface AppSettings {
   cloudBackupEnabled: boolean; // Whether auto cloud backup is enabled
   cloudProvider?: 'google_drive' | 'onedrive'; // Selected cloud provider
   lastBackupDate?: string; // Timestamp of last successful backup
-  highContrast: boolean; // Whether high-contrast mode is active
-  fontScale: 'small' | 'default' | 'large' | 'xlarge'; // User font size preference
 }
 
 // Analytics summary for a given time period

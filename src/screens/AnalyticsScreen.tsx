@@ -355,7 +355,7 @@ const AnalyticsScreen = () => {
             {flowData && totalIncome > 0 && (
               <Card style={styles.chartCard}>
                 <Text style={[styles.chartTitle, { color: theme.colors.text }]}>{t.dataViz?.incomeFlow || 'Spending Flow'}</Text>
-                <View accessibilityLabel="Spending flow from income to categories">
+                <View>
                   <Svg width={screenWidth - 64} height={Math.max(flowData.length * 38 + 40, 200)}>
                     {/* Source: Income label on the left */}
                     <Rect x={0} y={20} width={90} height={36} rx={8} fill={theme.colors.primary} />

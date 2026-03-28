@@ -87,9 +87,6 @@ const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={disabled || loading} // Block presses when loading or disabled
       activeOpacity={0.7} // Slight dim on press for feedback
-      accessibilityLabel={title}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: disabled || loading }}
     >
       {loading ? (
         // Show spinner during loading state

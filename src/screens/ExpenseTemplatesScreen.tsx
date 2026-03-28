@@ -126,8 +126,6 @@ const ExpenseTemplatesScreen = () => {
                 key={template.id}
                 onPress={() => handleUseTemplate(template)}
                 onLongPress={() => handleDelete(template.id, template.name)}
-                accessibilityLabel={`${template.name} - ${formatCurrency(template.amount)}`}
-                accessibilityHint={t.templates.tapToUse}
               >
                 <Card style={styles.templateCard}>
                   <View style={styles.templateRow}>
@@ -162,8 +160,6 @@ const ExpenseTemplatesScreen = () => {
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.colors.primary }]}
           onPress={() => { resetForm(); setShowModal(true); }}
-          accessibilityLabel={t.templates.createTemplate}
-          accessibilityRole="button"
         >
           <MaterialCommunityIcons name="plus" size={28} color="#FFF" />
         </TouchableOpacity>

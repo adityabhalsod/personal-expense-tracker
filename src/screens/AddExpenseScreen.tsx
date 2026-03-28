@@ -223,7 +223,6 @@ const AddExpenseScreen = () => {
                 onSubmitEditing={Keyboard.dismiss}
                 selectionColor="rgba(255,255,255,0.5)"
                 caretHidden={false}
-                accessibilityLabel={t.addExpense.amount}
               />
             </View>
           </View>
@@ -331,7 +330,6 @@ const AddExpenseScreen = () => {
             multiline
             numberOfLines={3}
             textAlignVertical="top" // Align text to top of multiline input
-            accessibilityLabel={t.addExpense.notes}
           />
         </View>
 
@@ -432,7 +430,6 @@ const AddExpenseScreen = () => {
                   setReceiptUris([...receiptUris, ...result.assets.map(a => a.uri)]);
                 }
               }}
-              accessibilityLabel={t.receipts.addReceipt}
             >
               <MaterialCommunityIcons name="camera-plus" size={24} color={theme.colors.textTertiary} />
             </TouchableOpacity>

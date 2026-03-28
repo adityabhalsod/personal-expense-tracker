@@ -147,9 +147,6 @@ const hi: TranslationKeys = {
     notifications: 'सूचनाएं',
     about: 'के बारे में',
     version: 'संस्करण',
-    accessibility: 'पहुँच',
-    highContrast: 'उच्च कंट्रास्ट',
-    fontSize: 'फ़ॉन्ट आकार',
   },
 
   // खर्च जोड़ें/संपादन स्क्रीन
@@ -558,21 +555,6 @@ const hi: TranslationKeys = {
     comparedToLastWeek: 'पिछले सप्ताह की तुलना में',
     enableDigest: 'साप्ताहिक सारांश',
     enableDigestDesc: 'हर रविवार साप्ताहिक खर्च सारांश प्राप्त करें',
-  },
-
-  accessibility: {
-    addExpenseButton: 'नया खर्च जोड़ें',
-    searchButton: 'खर्च खोजें',
-    deleteButton: 'चयनित आइटम हटाएं',
-    backButton: 'वापस जाएं',
-    menuButton: 'मेनू खोलें',
-    walletBalance: 'वॉलेट बैलेंस',
-    expenseAmount: 'खर्च राशि',
-    incomeAmount: 'आय राशि',
-    categoryIcon: 'श्रेणी आइकन',
-    swipeToDelete: 'हटाने के लिए स्वाइप करें',
-    tapToEdit: 'संपादित करने के लिए टैप करें',
-    pullToRefresh: 'रिफ्रेश के लिए नीचे खींचें',
   },
 
   receipts: {

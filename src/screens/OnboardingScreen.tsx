@@ -114,8 +114,6 @@ const OnboardingScreen = () => {
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: theme.colors.primary }]}
           onPress={handleNext}
-          accessibilityLabel={isLastStep ? t.onboarding.getStarted : t.onboarding.next}
-          accessibilityRole="button"
         >
           <Text style={styles.nextText}>
             {isLastStep ? t.onboarding.getStarted : t.onboarding.next}

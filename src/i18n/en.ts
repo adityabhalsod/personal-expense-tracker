@@ -145,9 +145,6 @@ const en = {
     notifications: 'Notifications',
     about: 'ABOUT',
     version: 'Version',
-    accessibility: 'ACCESSIBILITY',
-    highContrast: 'High Contrast',
-    fontSize: 'Font Size',
   },
 
   // Add/Edit Expense screen
@@ -566,22 +563,6 @@ const en = {
     comparedToLastWeek: 'vs last week',
     enableDigest: 'Weekly Summary',
     enableDigestDesc: 'Get a weekly spending summary every Sunday',
-  },
-
-  // Accessibility labels
-  accessibility: {
-    addExpenseButton: 'Add new expense',
-    searchButton: 'Search expenses',
-    deleteButton: 'Delete selected items',
-    backButton: 'Go back',
-    menuButton: 'Open menu',
-    walletBalance: 'Wallet balance',
-    expenseAmount: 'Expense amount',
-    incomeAmount: 'Income amount',
-    categoryIcon: 'Category icon',
-    swipeToDelete: 'Swipe to delete',
-    tapToEdit: 'Tap to edit',
-    pullToRefresh: 'Pull down to refresh',
   },
 
   // Receipts/photo attachments feature

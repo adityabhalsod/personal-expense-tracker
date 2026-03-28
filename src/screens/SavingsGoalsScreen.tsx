@@ -211,8 +211,6 @@ const SavingsGoalsScreen = () => {
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.colors.primary }]}
           onPress={handleNewGoal}
-          accessibilityLabel={t.savingsGoals.newGoal}
-          accessibilityRole="button"
         >
           <MaterialCommunityIcons name="plus" size={28} color="#FFF" />
         </TouchableOpacity>

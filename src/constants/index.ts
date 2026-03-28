@@ -64,8 +64,6 @@ export const DEFAULT_SETTINGS = {
   enablePin: false, // PIN lock off by default
   enableNotifications: true, // Budget notifications enabled
   cloudBackupEnabled: false, // Cloud backup off by default
-  highContrast: false, // High-contrast mode off by default
-  fontScale: 'default' as const, // Normal font size by default
 };
 
 // Month names for display in wallet and analytics screens

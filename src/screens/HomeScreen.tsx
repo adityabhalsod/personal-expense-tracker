@@ -162,8 +162,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             onPress={() => navigation.navigate('Search')}
             style={[styles.searchButton, { backgroundColor: theme.colors.surfaceVariant }]}
-            accessibilityLabel={t.search.title}
-            accessibilityRole="button"
           >
             <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.text} />
           </TouchableOpacity>
@@ -219,8 +217,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.widget, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('AddExpense', {})}
-            accessibilityLabel={t.home.addExpense}
-            accessibilityRole="button"
           >
             <View style={[styles.widgetIcon, { backgroundColor: '#FEE2E2' }]}>
               <MaterialCommunityIcons name="arrow-up-circle" size={32} color="#EF4444" />
@@ -235,8 +231,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.widget, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('AddIncome', {})}
-            accessibilityLabel={t.homeIncome.addIncome}
-            accessibilityRole="button"
           >
             <View style={[styles.widgetIcon, { backgroundColor: '#DCFCE7' }]}>
               <MaterialCommunityIcons name="arrow-down-circle" size={32} color="#22C55E" />
@@ -256,8 +250,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('MainTabs', { screen: 'Analytics' })}
-            accessibilityLabel={t.home.analytics}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#FEF3C7' }]}>
               <MaterialCommunityIcons name="chart-line" size={24} color="#F59E0B" />
@@ -330,8 +322,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('SavingsGoals')}
-            accessibilityLabel={t.savingsGoals.title}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#D1FAE5' }]}>
               <MaterialCommunityIcons name="piggy-bank" size={24} color="#10B981" />
@@ -343,8 +333,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('ExpenseTemplates')}
-            accessibilityLabel={t.templates.title}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#EDE9FE' }]}>
               <MaterialCommunityIcons name="lightning-bolt" size={24} color="#8B5CF6" />
@@ -356,8 +344,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('CalendarHeatmap')}
-            accessibilityLabel={t.calendarHeatmap.title}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#CFFAFE' }]}>
               <MaterialCommunityIcons name="calendar-month" size={24} color="#06B6D4" />
@@ -369,8 +355,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('Streaks')}
-            accessibilityLabel={t.streaks.title}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#FEF3C7' }]}>
               <MaterialCommunityIcons name="fire" size={24} color="#F59E0B" />
@@ -382,8 +366,6 @@ const HomeScreen = () => {
           <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
             onPress={() => navigation.navigate('MonthlyInsights')}
-            accessibilityLabel={t.insights.title}
-            accessibilityRole="button"
           >
             <View style={[styles.quickActionIcon, { backgroundColor: '#DBEAFE' }]}>
               <MaterialCommunityIcons name="lightbulb-on" size={24} color="#3B82F6" />

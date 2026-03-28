@@ -149,7 +149,6 @@ const ExpenseDetailScreen = () => {
                   source={{ uri: receipt.uri }}
                   style={styles.receiptImage}
                   resizeMode="cover"
-                  accessibilityLabel={t.receipts.viewReceipt}
                 />
               </View>
             ))}

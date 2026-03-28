@@ -93,13 +93,13 @@ const CalendarHeatmapScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Month navigation header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => setCurrentMonth(subMonths(currentMonth, 1))} accessibilityLabel="Previous month">
+        <TouchableOpacity onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}>
           <MaterialCommunityIcons name="chevron-left" size={28} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={[styles.monthLabel, { color: theme.colors.text }]}>
           {format(currentMonth, 'MMMM yyyy')}
         </Text>
-        <TouchableOpacity onPress={() => setCurrentMonth(addMonths(currentMonth, 1))} accessibilityLabel="Next month">
+        <TouchableOpacity onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}>
           <MaterialCommunityIcons name="chevron-right" size={28} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
@@ -144,7 +144,6 @@ const CalendarHeatmapScreen = () => {
                 isSelected && { borderColor: theme.colors.primary, borderWidth: 2 },
               ]}
               onPress={() => setSelectedDay(isSelected ? null : dateStr)}
-              accessibilityLabel={`${dayNum}: ${formatCurrency(amount)}`}
             >
               <Text style={[styles.cellDay, { color: level >= 3 ? '#FFF' : theme.colors.text }]}>{dayNum}</Text>
             </TouchableOpacity>

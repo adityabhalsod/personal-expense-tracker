@@ -13,7 +13,7 @@ import { useLanguage, LANGUAGES } from '../i18n';
 import Constants from 'expo-constants'; // Provides access to app.json config at runtime
 
 const SettingsScreen = () => {
-  const { theme, themeMode, setThemeMode, isDark, highContrast, setHighContrast, fontScale, setFontScale } = useTheme();
+  const { theme, themeMode, setThemeMode, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const settings = useAppStore(selectSettings); // Only subscribe to settings slice
   const updateSettings = useAppStore((s) => s.updateSettings);
@@ -112,8 +112,6 @@ const SettingsScreen = () => {
       style={[styles.row, { borderBottomColor: theme.colors.border }]}
       onPress={onPress}
       disabled={!onPress && !rightElement} // Disable if no action
-      accessibilityLabel={value ? `${label}: ${value}` : label}
-      accessibilityRole={rightElement ? 'none' : 'button'}
     >
       <View style={styles.rowLeft}>
         <MaterialCommunityIcons name={icon as any} size={22} color={theme.colors.primary} />
@@ -195,70 +193,6 @@ const SettingsScreen = () => {
               />
             }
           />
-        </View>
-
-        {/* Accessibility section — high-contrast toggle and font size selector */}
-        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>{t.settings.accessibility}</Text>
-        <View style={[styles.section, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-          {/* High-contrast toggle for better readability */}
-          <SettingsRow
-            icon="contrast-box"
-            label={t.settings.highContrast}
-            rightElement={
-              <Switch
-                value={highContrast}
-                onValueChange={(val) => {
-                  setHighContrast(val);
-                  updateSettings({ highContrast: val });
-                }}
-                trackColor={{ false: theme.colors.border, true: theme.colors.primary + '40' }}
-                thumbColor={highContrast ? theme.colors.primary : '#f4f3f4'}
-                accessibilityLabel={t.settings.highContrast}
-                accessibilityRole="switch"
-              />
-            }
-          />
-          {/* Font size selector — chip-style buttons for small/default/large/xlarge */}
-          <View style={[styles.row, { borderBottomColor: theme.colors.border, flexDirection: 'column', alignItems: 'flex-start' }]}>
-            <View style={styles.rowLeft}>
-              <MaterialCommunityIcons name="format-size" size={22} color={theme.colors.primary} />
-              <Text style={[styles.rowLabel, { color: theme.colors.text }]}>{t.settings.fontSize}</Text>
-            </View>
-            <View style={styles.fontScaleRow}>
-              {(['small', 'default', 'large', 'xlarge'] as const).map((size) => {
-                const isActive = settings.fontScale === size || (!settings.fontScale && size === 'default');
-                return (
-                  <TouchableOpacity
-                    key={size}
-                    style={[
-                      styles.fontScaleChip,
-                      { borderColor: theme.colors.border },
-                      isActive && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
-                    ]}
-                    onPress={() => {
-                      setFontScale(size);
-                      updateSettings({ fontScale: size });
-                    }}
-                    accessibilityLabel={`${t.settings.fontSize}: ${size}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    <Text style={[
-                      styles.fontScaleLabel,
-                      { color: theme.colors.textSecondary },
-                      size === 'small' && { fontSize: 12 },
-                      size === 'default' && { fontSize: 14 },
-                      size === 'large' && { fontSize: 17 },
-                      size === 'xlarge' && { fontSize: 20 },
-                      isActive && { color: '#FFFFFF', fontWeight: '600' },
-                    ]}>
-                      A
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
         </View>
 
         {/* About section */}
@@ -518,23 +452,6 @@ const styles = StyleSheet.create({
   dangerDesc: {
     fontSize: 12,
     marginTop: 2,
-  },
-  // Font scale chip selector styles
-  fontScaleRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 10,
-    paddingLeft: 34, // Align with text after icon
-  },
-  fontScaleChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  fontScaleLabel: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

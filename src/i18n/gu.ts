@@ -147,9 +147,6 @@ const gu: TranslationKeys = {
     notifications: 'સૂચનાઓ',
     about: 'વિશે',
     version: 'આવૃત્તિ',
-    accessibility: 'ઍક્સેસિબિલિટી',
-    highContrast: 'ઉચ્ચ કોન્ટ્રાસ્ટ',
-    fontSize: 'ફોન્ટ કદ',
   },
 
   // ખર્ચ ઉમેરો/ફેરફાર સ્ક્રીન
@@ -560,21 +557,6 @@ const gu: TranslationKeys = {
     comparedToLastWeek: 'ગયા અઠવાડિયાની સરખામણીમાં',
     enableDigest: 'સાપ્તાહિક સારાંશ',
     enableDigestDesc: 'દર રવિવારે સાપ્તાહિક ખર્ચ સારાંશ મેળવો',
-  },
-
-  accessibility: {
-    addExpenseButton: 'નવો ખર્ચ ઉમેરો',
-    searchButton: 'ખર્ચ શોધો',
-    deleteButton: 'પસંદ કરેલ આઇટમ કાઢો',
-    backButton: 'પાછા જાઓ',
-    menuButton: 'મેનુ ખોલો',
-    walletBalance: 'વૉલેટ બેલેન્સ',
-    expenseAmount: 'ખર્ચ રકમ',
-    incomeAmount: 'આવક રકમ',
-    categoryIcon: 'શ્રેણી આઇકન',
-    swipeToDelete: 'કાઢવા માટે સ્વાઇપ કરો',
-    tapToEdit: 'સંપાદિત કરવા ટેપ કરો',
-    pullToRefresh: 'રિફ્રેશ માટે નીચે ખેંચો',
   },
 
   receipts: {

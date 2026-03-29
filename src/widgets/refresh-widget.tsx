@@ -2,7 +2,7 @@
 // Called after any financial mutation (add/edit/delete expense, income, transfer)
 
 import React from 'react';
-import { Platform, Appearance } from 'react-native';
+import { Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 import { ExpenseTrackerWidget } from './ExpenseTrackerWidget';
 import * as db from '../database';
@@ -47,7 +47,6 @@ export async function refreshWidget(): Promise<void> {
     const totalBalance = wallets.reduce((sum, w) => sum + w.currentBalance, 0);
     const expenses = await db.getAllExpenses(5);
     const currencySymbol = await getCurrencySymbol();
-    const isDark = Appearance.getColorScheme() === 'dark';
 
     // Map expenses to the compact format the widget expects
     const recentExpenses = expenses.map((e) => ({
@@ -61,14 +60,29 @@ export async function refreshWidget(): Promise<void> {
     // Ask the system to re-render every instance of the ExpenseTracker widget
     await requestWidgetUpdate({
       widgetName: 'ExpenseTracker',
-      renderWidget: () => (
-        <ExpenseTrackerWidget
-          balance={formatWidgetAmount(totalBalance)}
-          currencySymbol={currencySymbol}
-          recentExpenses={recentExpenses}
-          isDark={isDark}
-        />
-      ),
+      // Render both theme variants — Android selects based on system appearance
+      renderWidget: (info) => ({
+        light: (
+          <ExpenseTrackerWidget
+            balance={formatWidgetAmount(totalBalance)}
+            currencySymbol={currencySymbol}
+            recentExpenses={recentExpenses}
+            isDark={false}
+            widgetWidth={info.width}
+            widgetHeight={info.height}
+          />
+        ),
+        dark: (
+          <ExpenseTrackerWidget
+            balance={formatWidgetAmount(totalBalance)}
+            currencySymbol={currencySymbol}
+            recentExpenses={recentExpenses}
+            isDark={true}
+            widgetWidth={info.width}
+            widgetHeight={info.height}
+          />
+        ),
+      }),
       widgetNotFound: () => {
         // No widget placed on home screen — nothing to update
       },
